@@ -168,7 +168,15 @@ class GeminiActorService implements ActorService {
           }
         ],
         temperature: 0.3,
-        timeout: const Duration(seconds: 45),
+        timeout: const Duration(seconds: 60),
+        // Reasoning tokens count against maxOutputTokens. At the old 1400 the
+        // model spent 1340 thinking and had 44 left to answer, so every
+        // analysis came back truncated and unparseable — the user saw the
+        // honest "could not analyse" fallback on a session that was fine.
+        // Analysis is off the critical path, so it can afford to think; it
+        // just needs room to speak afterwards.
+        thinkingBudget: 2048,
+        maxOutputTokens: 8192,
       );
 
   Future<String> _generate({
