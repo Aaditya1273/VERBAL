@@ -44,3 +44,4 @@ ios/Flutter/flutter_export_environment.sh
 
 # Local dart-define config
 env.json
+demo/
