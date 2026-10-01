@@ -5,7 +5,7 @@ import '../../app/providers.dart';
 import '../../app/router.dart';
 import '../../app/theme.dart';
 import '../../core/analytics.dart';
-import '../../shared/mascot.dart';
+import '../../shared/presence.dart';
 import '../../shared/widgets.dart';
 
 /// One question, then straight into a conversation.
@@ -86,7 +86,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: PageBody(
                 children: [
                   const SizedBox(height: VerbalTokens.lg),
-                  const Center(child: Echo(size: 140)),
+                  const Center(child: Presence(size: 120, listening: true)),
                   const SizedBox(height: VerbalTokens.lg),
                   Text('VERBAL', style: context.t.labelMedium),
                   const SizedBox(height: VerbalTokens.sm),

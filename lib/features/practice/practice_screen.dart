@@ -15,7 +15,7 @@ import '../../domain/pitfall.dart';
 import '../../domain/playbook.dart';
 import '../../domain/scenario.dart';
 import '../../domain/session.dart';
-import '../../shared/mascot.dart';
+import '../../shared/presence.dart';
 import '../../shared/widgets.dart';
 import 'practice_controller.dart';
 
@@ -260,10 +260,10 @@ class _ActorStage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Echo reads the engine, not the script: the face is the state.
-          Echo(
-            size: 132,
-            emotion: state.emotion,
+          // The orb reads the engine, not the script: heat is pressure.
+          Presence(
+            size: 150,
+            heat: state.pressure,
             speaking: state.phase == VoicePhase.speaking,
             listening: state.phase == VoicePhase.listening,
           ),

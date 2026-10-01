@@ -64,7 +64,7 @@ Widget host(
     child: MaterialApp(
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
-      // Echo's idle animation never stops, so pumpAndSettle would hang.
+      // The orb's idle animation never stops, so pumpAndSettle would hang.
       builder: (context, c) => MediaQuery(
         data: MediaQuery.of(context).copyWith(disableAnimations: true),
         child: c ?? const SizedBox.shrink(),
@@ -81,6 +81,9 @@ void main() {
 
     expect(find.text('Practice difficult conversations before you have them.'),
         findsOneWidget);
+    // The statement type is large now, so the question starts below the fold.
+    await t.scrollUntilVisible(
+        find.text('What do you want to get better at?'.toUpperCase()), 120);
     expect(find.text('What do you want to get better at?'.toUpperCase()),
         findsOneWidget);
 
@@ -89,7 +92,7 @@ void main() {
     expect(t.widget<FilledButton>(button).onPressed, isNull,
         reason: 'disabled until an interest is chosen');
 
-    // Echo now sits above the options, so the choice can start below the fold.
+    // The orb now sits above the options, so the choice can start below the fold.
     await t.ensureVisible(find.text('Managing people'));
     await t.pumpAndSettle();
     await t.tap(find.text('Managing people'));
