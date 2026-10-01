@@ -1,97 +1,121 @@
-# VERBAL
+<p align="center"><img src="docs/art/hero.svg" alt="VERBAL — rehearse the conversation before you have it" width="100%"></p>
 
-### Practice difficult conversations before you have them.
-
-**A voice-first rehearsal gym for high-stakes conversations.** Choose a scenario,
-speak out loud, get pushed back on, and walk away with specific feedback and a
-line you will actually reuse.
-
-Flutter · Android + iOS · Gemini · ElevenLabs · RevenueCat
+<p align="center">
+  <b>Flutter</b> · <b>Gemini</b> · <b>RevenueCat</b> · on-device speech · local-first · MIT
+</p>
 
 ---
 
-## Contents
+## 👋 Meet the cloud
 
-[Overview](#overview) · [Problem](#the-problem) · [Solution](#the-solution) ·
-[Core loop](#the-core-loop) · [Scenario engine](#the-scenario-engine) ·
-[Research grounding](#research-grounding) · [Pitfall Bench](#verbal-pitfall-bench) ·
-[Voice](#the-voice-experience) · [Analysis](#post-session-intelligence) ·
-[Playbook](#the-playbook) · [Personalisation](#personalisation) ·
-[Retention](#retention) · [Monetisation](#monetisation) ·
-[RevenueCat](#revenuecat) · [Analytics](#analytics) ·
-[Experimentation](#experimentation) · [Architecture](#architecture) ·
-[Setup](#local-setup) · [Testing](#testing) · [Security](#security) ·
-[Privacy](#privacy) · [Status](#what-is-and-is-not-implemented) ·
-[Roadmap](#roadmap) · [Shipaton](#shipaton-strategy)
+<img src="assets/mascot/neutre.png" align="right" width="120">
 
----
+The cloud is the other person — your manager, your report, your angry client.
+It rests looking up and away, blinks, and turns to face you the moment you
+start talking. Everything else in VERBAL is black, grey and white, so the
+cloud is the only thing on screen with a face. You always know where to look.
 
-## Overview
+<br clear="right">
 
-Most people do not fail difficult conversations because they have nothing to say.
-They fail because they have never rehearsed saying it under pressure.
+## 😬 The problem
 
-Giving difficult feedback. Negotiating a raise. Telling someone their job is
-ending. You can read about all three. You cannot read your way through the moment
-the other person says *"So you're blaming me?"* and your prepared answer
-evaporates.
+<img src="docs/art/problem.svg" width="100%">
 
-VERBAL turns those moments into something you can practise.
+The conversations that shape a career — the raise, the hard feedback, the
+"we're letting you go" — happen **once**, live, with no rehearsal.
 
-> **You don't need another answer. You need another rehearsal.**
+## 💊 The painkiller
 
----
+**Practise it out loud, against someone who pushes back, then see exactly what
+worked.**
 
-## The problem
+<img src="docs/art/loop.svg" width="100%">
 
-High-stakes conversations are asymmetric. You get one attempt, in real time, with
-a real relationship on the line — and the feedback arrives weeks later, if ever.
+| | |
+|---|---|
+| 🎙️ **Voice, not chat** | You hold and speak. It answers in a real voice. |
+| 🧱 **Pushes back on schedule** | A deterministic engine decides *when* objections land. |
+| 🎯 **Catches the mistake** | Bury the headline or apologise for the decision, and it reacts. |
+| 📊 **Scores with evidence** | Six skills plus DEAR MAN, each tied to your own words. |
+| 📒 **Keeps what worked** | Your best lines go into a Playbook for next time. |
 
-Existing options do not close the gap:
+## ✨ What makes it different
 
-| Option | What it gives you | What it does not |
-|---|---|---|
-| Leadership books | Frameworks | Any experience of pressure |
-| Courses | Theory and vocabulary | A person pushing back |
-| Asking an LLM | A script | Anything that survives contact |
-| A coach | Real practice | Availability, and affordability |
+| Everyone else | VERBAL |
+|---|---|
+| A chatbot that folds when you push | An engine that **holds its position** until you earn the concession |
+| The model decides everything | **The model observes, the engine decides** — measured, not hoped |
+| "Be more confident" | "Turn 3: you defended before acknowledging. Try: *…*" |
+| Your transcripts on a server | **Everything stays on the phone** |
+| Claims | A **benchmark in the repo** you can rerun |
 
-Knowing what to say and being able to say it under pressure are different skills.
-Only the second one is trained by doing.
+<img src="docs/art/bench.svg" width="100%">
 
----
+The model is good at *noticing* a mistake and bad at *acting* on it unaided.
+So VERBAL lets it notice and makes the engine act. That split is the product.
 
-## The solution
+## 🔁 One turn, end to end
 
-A simulated conversation partner who has their own objective, their own
-emotional state, and a reason to resist you — wrapped in a system that decides
-*when* they resist, so the rehearsal stays coherent instead of drifting.
+<img src="docs/art/turn.svg" width="100%">
 
-Then, afterwards, feedback that quotes what you actually said.
+## 🏗️ Architecture
 
----
+<img src="docs/art/architecture.svg" width="100%">
 
-## The core loop
+## 📱 The app
 
-```text
-Choose scenario  →  Read the brief  →  Choose difficulty
-       ↓
-Speak · AI actor pushes back · pressure escalates
-       ↓
-Conversation closes
-       ↓
-Scores · what worked · what cost you · a better line
-       ↓
-Save to Playbook
-       ↓
-Next practice recommended from your weakest skill
-       ↓
-              (return)
+<p align="center">
+  <img src="docs/screens/home.jpg" width="24%">
+  <img src="docs/screens/practice.jpg" width="24%">
+  <img src="docs/screens/scenarios.jpg" width="24%">
+  <img src="docs/screens/playbook.jpg" width="24%">
+</p>
+<p align="center">
+  <sub><b>Home</b> — one thing to do next &nbsp;·&nbsp; <b>Practice</b> — the cloud, the line, one button &nbsp;·&nbsp; <b>Scenarios</b> — five hard talks &nbsp;·&nbsp; <b>Playbook</b> — lines that worked</sub>
+</p>
+<p align="center">
+  <img src="docs/screens/progress.jpg" width="24%">
+  <img src="docs/screens/settings.jpg" width="24%">
+  <img src="docs/screens/paywall.jpg" width="24%">
+</p>
+<p align="center">
+  <sub><b>Progress</b> — six skills over time &nbsp;·&nbsp; <b>Settings</b> — your data stays here &nbsp;·&nbsp; <b>Pro</b> — live RevenueCat offerings</sub>
+</p>
+
+## 🎭 Five conversations
+
+| | Scenario | Who | Stresses |
+|---|---|---|---|
+| 🗣️ | Giving Difficult Feedback | Maya | clarity · empathy · specificity |
+| 💰 | Negotiating a Raise | Ray | assertiveness · composure |
+| 🛑 | Setting a Boundary | Jon | assertiveness · clarity |
+| 😠 | Handling an Angry Client · **Pro** | Delia | composure · listening |
+| 📄 | Termination Conversation · **Pro** | Tom | clarity · empathy |
+
+## 💳 Monetisation
+
+Free: 3 sessions a week. **Pro** (monthly · annual · lifetime) unlocks unlimited
+practice, the two hardest scenarios, full analysis and an unlimited Playbook —
+powered by **RevenueCat**, offerings fetched live.
+
+## 🚀 Run it
+
+```bash
+cp .env.example .env.local        # add GEMINI_API_KEY (+ RevenueCat test key)
+flutter pub get
+flutter run --dart-define-from-file=env.json
+flutter test                      # 221 tests
+dart run tool/pitfall_bench.dart  # reproduce the bench
 ```
 
-Every architectural decision in this repository serves that loop.
+No key? It still runs: scripted lines, device voice, honest fallbacks.
 
 ---
+
+# 🔬 Deep dive
+
+Everything below is the full engineering write-up: the engine, the research,
+the bench, the voice loop, and an honest list of what is and isn't built.
 
 ## The scenario engine
 
