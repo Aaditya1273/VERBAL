@@ -53,11 +53,11 @@ def render(size: int) -> bytes:
     body_dark = (0x14, 0x14, 0x17)
 
     tilt = -0.25
-    eye_h = r * 0.40
-    eye_w = r * 0.15
-    gap = r * 0.30
-    eyes = [(-gap, 0.0), (gap, -r * 0.05)]
-    oy = cy - r * 0.10
+    eye_h = r * 0.30
+    eye_w = r * 0.14
+    gap = r * 0.24
+    eyes = [(-gap, 0.0), (gap, -r * 0.06)]
+    cx_eyes, oy = cx + r * 0.30, cy - r * 0.30
 
     rows = bytearray()
     for y in range(size):
@@ -73,7 +73,7 @@ def render(size: int) -> bytes:
                 if d > r - size * 0.004:
                     colour = _mix(colour, INK, 0.5 * max(0.0, -dy / r))
                 for (ex, ey) in eyes:
-                    mx, my = px - (cx + ex), py - (oy + ey)
+                    mx, my = px - (cx_eyes + ex), py - (oy + ey)
                     ux = mx * math.cos(-tilt) - my * math.sin(-tilt)
                     uy = mx * math.sin(-tilt) + my * math.cos(-tilt)
                     half = eye_h / 2 - eye_w / 2

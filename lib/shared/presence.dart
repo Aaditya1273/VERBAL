@@ -7,34 +7,48 @@ import '../domain/scenario.dart';
 import '../domain/session.dart';
 
 /// What the face is doing. The eyes are the whole vocabulary.
+///
+/// [neutral] is the resting face: eyes up and to the right, like a highlight
+/// on a ball. Every other expression brings the eyes to the centre.
 enum Expression {
   neutral,
   attentive,
-  thinking,
-  surprised,
   happy,
+  laughing,
+  angry,
   sad,
+  scared,
   suspicious,
+  confused,
+  curious,
+  proud,
+  shy,
   unimpressed,
-  angry;
+  sleepy;
 
-  /// The face the engine's state deserves. Phase first — a listening face
-  /// is a listening face whatever the mood — then the emotion.
+  /// The face the engine's state deserves.
+  ///
+  /// While the user speaks the other person is attentive, whatever the
+  /// mood. While it thinks it looks curious. Once it answers, the face is
+  /// the mood — and it holds it.
   static Expression of({required Emotion emotion, VoicePhase? phase}) {
     switch (phase) {
       case VoicePhase.listening:
         return Expression.attentive;
       case VoicePhase.processing:
-        return Expression.thinking;
+        return Expression.curious;
+      case VoicePhase.idle:
+      case null:
+        return Expression.neutral;
       default:
         break;
     }
     return switch (emotion) {
-      Emotion.calm => Expression.neutral,
+      Emotion.calm => Expression.happy,
       Emotion.guarded => Expression.suspicious,
       Emotion.defensive => Expression.unimpressed,
-      Emotion.frustrated => Expression.sad,
-      Emotion.upset => Expression.angry,
+      Emotion.frustrated => Expression.angry,
+      Emotion.upset => Expression.sad,
       Emotion.angry => Expression.angry,
     };
   }
@@ -143,9 +157,10 @@ class _PresenceState extends State<Presence>
 /// One eye: a rounded capsule, or an arc for a smile.
 class _Eye {
   const _Eye({
-    this.w = 0.15,
-    this.h = 0.40,
-    this.tilt = -0.25,
+    this.w = 0.14,
+    this.h = 0.34,
+    this.tilt = 0,
+    this.dx = 0,
     this.dy = 0,
     this.arc = false,
   });
@@ -154,8 +169,9 @@ class _Eye {
   final double w;
   final double h;
 
-  /// Radians; negative leans the top to the right.
+  /// Radians; positive leans the top to the right.
   final double tilt;
+  final double dx;
   final double dy;
 
   /// Drawn as an upward arc (a closed, happy eye) instead of a capsule.
@@ -222,14 +238,14 @@ class _MascotPainter extends CustomPainter {
 
   /// Where the eyes are looking, as a fraction of the body radius.
   Offset get _gaze {
-    if (listening) return Offset.zero; // straight at the user, held still
+    if (expression != Expression.neutral) return Offset.zero;
     const glance = 2.4;
     final seg = (seconds / glance).floor();
     final f = (seconds - seg * glance) / glance;
     final from = Offset(_noise(seg, 1), _noise(seg, 2));
     final to = Offset(_noise(seg + 1, 1), _noise(seg + 1, 2));
     final k = Curves.easeInOut.transform((f / 0.2).clamp(0.0, 1.0));
-    return Offset.lerp(from, to, k)! * (speaking ? 0.05 : 0.08);
+    return Offset.lerp(from, to, k)! * 0.06;
   }
 
   /// 1 open, 0 shut.
@@ -241,42 +257,79 @@ class _MascotPainter extends CustomPainter {
     return 1;
   }
 
-  /// The eye shapes for each expression, left then right. Drawn from the
-  /// same vocabulary as the reference sheet: capsules that lean, widen,
-  /// narrow or close into an arc.
+  /// Where the pair of eyes sits, as a fraction of the radius. Only the
+  /// resting face looks away; every expression is met head-on.
+  Offset get _seat => expression == Expression.neutral
+      ? const Offset(0.30, -0.30)
+      : const Offset(0, -0.04);
+
+  /// The eye shapes for each expression, left then right — the reference
+  /// sheet, in capsules that lean, widen, narrow, drop or close into arcs.
   List<_Eye> get _eyes => switch (expression) {
-        Expression.neutral => const [_Eye(), _Eye(dy: -0.05)],
-        Expression.attentive => const [
-            _Eye(h: 0.48, tilt: 0),
-            _Eye(h: 0.48, tilt: 0),
+        // Two highlights on a ball: tilted, the right one a touch higher.
+        Expression.neutral => const [
+            _Eye(h: 0.30, tilt: -0.25),
+            _Eye(h: 0.30, tilt: -0.25, dy: -0.06),
           ],
-        Expression.thinking => const [
-            _Eye(w: 0.18, h: 0.18, tilt: 0, dy: 0.04),
-            _Eye(w: 0.26, h: 0.26, tilt: 0, dy: -0.08),
-          ],
-        Expression.surprised => const [
-            _Eye(w: 0.30, h: 0.30, tilt: 0),
-            _Eye(w: 0.30, h: 0.30, tilt: 0),
-          ],
+        // Straight, open, centred.
+        Expression.attentive => const [_Eye(h: 0.36), _Eye(h: 0.36)],
+        // Closed into two short lines, high on the face.
         Expression.happy => const [
-            _Eye(w: 0.28, h: 0.10, arc: true),
-            _Eye(w: 0.28, h: 0.10, arc: true),
+            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: -0.06),
+            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: -0.06),
           ],
-        Expression.sad => const [
-            _Eye(h: 0.30, tilt: 0.45, dy: 0.04),
-            _Eye(h: 0.30, tilt: -0.45, dy: 0.04),
+        Expression.laughing => const [
+            _Eye(w: 0.26, h: 0.10, arc: true),
+            _Eye(w: 0.26, h: 0.10, arc: true),
           ],
-        Expression.suspicious => const [
-            _Eye(h: 0.22, tilt: 0),
-            _Eye(h: 0.14, tilt: 0, dy: 0.02),
-          ],
-        Expression.unimpressed => const [
-            _Eye(w: 0.26, h: 0.10, tilt: 0),
-            _Eye(w: 0.26, h: 0.10, tilt: 0),
-          ],
+        // \ /
         Expression.angry => const [
-            _Eye(h: 0.30, tilt: -0.55),
-            _Eye(h: 0.30, tilt: 0.55),
+            _Eye(h: 0.26, tilt: -0.60),
+            _Eye(h: 0.26, tilt: 0.60),
+          ],
+        // / \ and dropped.
+        Expression.sad => const [
+            _Eye(h: 0.26, tilt: 0.50, dy: 0.06),
+            _Eye(h: 0.26, tilt: -0.50, dy: 0.06),
+          ],
+        Expression.scared => const [
+            _Eye(w: 0.30, h: 0.30),
+            _Eye(w: 0.30, h: 0.30),
+          ],
+        // One narrowed.
+        Expression.suspicious => const [
+            _Eye(h: 0.22),
+            _Eye(h: 0.12, dy: 0.02),
+          ],
+        // One raised.
+        Expression.confused => const [
+            _Eye(h: 0.30, dy: 0.04),
+            _Eye(h: 0.30, dy: -0.10),
+          ],
+        // Both looking up and off to one side.
+        Expression.curious => const [
+            _Eye(h: 0.26, dx: 0.10, dy: -0.10),
+            _Eye(h: 0.22, dx: 0.10, dy: -0.14),
+          ],
+        // Closed, smug: two short lines leaning out.
+        Expression.proud => const [
+            _Eye(w: 0.09, h: 0.20, tilt: 1.25, dy: -0.04),
+            _Eye(w: 0.09, h: 0.20, tilt: 1.90, dy: -0.04),
+          ],
+        // Small, looking down.
+        Expression.shy => const [
+            _Eye(w: 0.12, h: 0.20, dy: 0.10),
+            _Eye(w: 0.12, h: 0.20, dy: 0.10),
+          ],
+        // - -
+        Expression.unimpressed => const [
+            _Eye(w: 0.09, h: 0.24, tilt: 1.57),
+            _Eye(w: 0.09, h: 0.24, tilt: 1.57),
+          ],
+        // Half shut, low.
+        Expression.sleepy => const [
+            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: 0.08),
+            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: 0.08),
           ],
       };
 
@@ -345,10 +398,9 @@ class _MascotPainter extends CustomPainter {
     final gaze = _gaze * r;
     final lid = _lid;
     final eyes = _eyes;
-    final gap = r * 0.30;
-    final paint = Paint()
-      ..color = ink
-      ..style = PaintingStyle.fill;
+    final seat = _seat * r;
+    final gap = r * 0.24;
+    final paint = Paint()..color = ink;
     final stroke = Paint()
       ..color = ink
       ..style = PaintingStyle.stroke
@@ -356,12 +408,12 @@ class _MascotPainter extends CustomPainter {
       ..strokeWidth = r * 0.09;
 
     canvas.save();
-    canvas.translate(centre.dx + gaze.dx, centre.dy - r * 0.10 + gaze.dy);
+    canvas.translate(centre.dx + seat.dx + gaze.dx, centre.dy + seat.dy + gaze.dy);
     for (var i = 0; i < 2; i++) {
       final e = eyes[i];
       final side = i == 0 ? -1 : 1;
       canvas.save();
-      canvas.translate(side * gap, e.dy * r);
+      canvas.translate(side * gap + e.dx * r, e.dy * r);
       canvas.rotate(e.tilt);
       if (e.arc) {
         final w = e.w * r;
@@ -372,8 +424,11 @@ class _MascotPainter extends CustomPainter {
           stroke,
         );
       } else {
-        final h = math.max(r * 0.06, e.h * r * lid);
-        final w = math.min(e.w * r, h);
+        // Only an upright, open eye blinks; a line on its side is already
+        // a closed one.
+        final open = e.tilt.abs() < 1.0 ? lid : 1.0;
+        final w = e.w * r;
+        final h = math.max(w, e.h * r * open);
         canvas.drawRRect(
           RRect.fromRectAndRadius(
             Rect.fromCenter(center: Offset.zero, width: w, height: h),

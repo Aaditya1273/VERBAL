@@ -86,7 +86,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: PageBody(
                 children: [
                   const SizedBox(height: VerbalTokens.lg),
-                  const Center(child: Presence(size: 120, listening: true)),
+                  const Center(
+                      child: Presence(
+                          size: 120, expression: Expression.attentive)),
                   const SizedBox(height: VerbalTokens.lg),
                   Text('VERBAL', style: context.t.labelMedium),
                   const SizedBox(height: VerbalTokens.sm),
