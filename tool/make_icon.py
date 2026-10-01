@@ -3,9 +3,9 @@
 
 Pure stdlib (zlib + struct) so it runs anywhere without Pillow.
 
-The mark is the mascot: a white ball with two eyes and a halo of colour on a
-black ground — the same character the user talks to every session. It is
-large and off-centre so it still reads at 48px in a launcher.
+The mark is the mascot, exactly as it appears in the app: a solid black ball
+with two white eyes, and the spectrum coming out from behind it mid-sentence.
+Centred, generous margin, so it still reads at 48px in a launcher.
 
     python3 tool/make_icon.py
 """
@@ -41,22 +41,23 @@ def _mix(base, top, alpha):
 
 
 def render(size: int) -> bytes:
-    """Return raw RGB rows: the mascot, large and off-centre, on black.
+    """Return raw RGB rows: the mascot, centred on black, mid-sentence.
 
-    The ball sits low-left and bleeds past the edge, the way a character
-    leans into a doorway; the eyes look up and to the right, into the light.
+    The same geometry as lib/shared/presence.dart: a solid black ball with
+    two white eyes, and the spectrum coming out from behind its edge.
     """
-    cx, cy = size * 0.46, size * 0.58
-    r = size * 0.44
-    halo_r = r * 1.14
-    halo_w = r * 0.30
+    cx = cy = size / 2
+    r = size * 0.31
+    reach = r * 1.42                   # the light, part way out
+    body_lit = (0x30, 0x30, 0x35)
+    body_dark = (0x14, 0x14, 0x17)
 
     tilt = -0.25
     eye_h = r * 0.40
     eye_w = r * 0.15
-    gap = r * 0.26
-    ox, oy = cx + r * 0.22, cy - r * 0.22
-    eyes = [(-gap / 2, 0.0), (gap / 2, -r * 0.05)]
+    gap = r * 0.30
+    eyes = [(-gap, 0.0), (gap, -r * 0.05)]
+    oy = cy - r * 0.10
 
     rows = bytearray()
     for y in range(size):
@@ -65,26 +66,26 @@ def render(size: int) -> bytes:
             px, py = x + 0.5, y + 0.5
             dx, dy = px - cx, py - cy
             d = math.hypot(dx, dy)
-            colour = BG
-
-            band = abs(d - halo_r) / halo_w
-            if band < 2.4:
-                strength = math.exp(-band * band * 1.4) * 0.7
-                colour = _mix(colour, _spectrum_at(math.atan2(dy, dx)), strength)
 
             if d <= r:
-                # Shade toward the bottom-right so it reads as a ball.
-                shade = max(0.0, (dx + dy) / (2 * r))
-                colour = _mix(INK, BG, 0.22 * shade * shade)
-                mx, my = px - ox, py - oy
-                ux = mx * math.cos(-tilt) - my * math.sin(-tilt)
-                uy = mx * math.sin(-tilt) + my * math.cos(-tilt)
+                lift = max(0.0, 1 - math.hypot(dx + r * 0.55, dy + r * 0.65) / (r * 1.3))
+                colour = _mix(body_dark, body_lit, lift)
+                if d > r - size * 0.004:
+                    colour = _mix(colour, INK, 0.5 * max(0.0, -dy / r))
                 for (ex, ey) in eyes:
-                    lx, ly = ux - ex, uy - ey
+                    mx, my = px - (cx + ex), py - (oy + ey)
+                    ux = mx * math.cos(-tilt) - my * math.sin(-tilt)
+                    uy = mx * math.sin(-tilt) + my * math.cos(-tilt)
                     half = eye_h / 2 - eye_w / 2
-                    ly_c = max(-half, min(half, ly))
-                    if math.hypot(lx, ly - ly_c) <= eye_w / 2:
-                        colour = BG
+                    uy_c = max(-half, min(half, uy))
+                    if math.hypot(ux, uy - uy_c) <= eye_w / 2:
+                        colour = INK
+            else:
+                colour = BG
+                # Soft edge on the light, like the blur in the app.
+                edge = (d - reach) / (r * 0.22)
+                strength = 1.0 if edge < 0 else math.exp(-edge * edge * 2.0)
+                colour = _mix(colour, _spectrum_at(math.atan2(dy, dx)), 0.92 * strength)
 
             rows += bytes(int(max(0, min(255, c))) for c in colour)
     return bytes(rows)

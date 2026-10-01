@@ -266,6 +266,8 @@ class _ActorStage extends StatelessWidget {
           // The orb reads the engine, not the script: heat is pressure.
           Presence(
             size: 150,
+            expression:
+                Expression.of(emotion: state.emotion, phase: state.phase),
             heat: state.pressure,
             speaking: state.phase == VoicePhase.speaking,
             listening: state.phase == VoicePhase.listening,

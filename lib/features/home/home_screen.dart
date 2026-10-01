@@ -41,7 +41,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: VerbalTokens.sm),
               // The other person greets you before any words do.
-              const Center(child: Presence(size: 168)),
+              const Center(child: Presence(size: 168, expression: Expression.happy)),
               const SizedBox(height: VerbalTokens.sm),
               Text(_greeting(), style: context.t.bodyMedium),
               const SizedBox(height: VerbalTokens.xs),
