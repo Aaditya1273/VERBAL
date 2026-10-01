@@ -22,20 +22,21 @@ class VerbalTokens {
   static const lightLine = Color(0xFFE3E0DA);
 
   // Dark
-  static const darkBg = Color(0xFF0E1116);
-  static const darkSurface = Color(0xFF171B22);
-  static const darkRaised = Color(0xFF1F242D);
-  static const darkInk = Color(0xFFF2F3F5);
-  static const darkMuted = Color(0xFFB3BBC6);
-  static const darkLine = Color(0xFF272B31);
+  static const darkBg = Color(0xFF09090B);
+  static const darkSurface = Color(0xFF141416);
+  static const darkRaised = Color(0xFF1D1D21);
+  static const darkInk = Color(0xFFF5F5F7);
+  static const darkMuted = Color(0xFF9B9BA4);
+  static const darkLine = Color(0xFF26262B);
 
-  /// Accent — calm, professional, never neon.
-  static const accentLight = Color(0xFF175E54);
-  static const accentDark = Color(0xFF44A794);
+  /// Accent — white. The interface is monochrome; the only colour on any
+  /// screen is the mascot, so the eye always knows where the other person is.
+  static const accentLight = Color(0xFF111113);
+  static const accentDark = Color(0xFFF5F5F7);
 
   /// Signal — live microphone, pressure, anything demanding attention.
   static const signalLight = Color(0xFFB4400E);
-  static const signalDark = Color(0xFFF97316);
+  static const signalDark = Color(0xFFFF6B4A);
 
   // Spacing scale.
   static const xs = 4.0;
@@ -223,6 +224,9 @@ class _LitGround extends CustomPainter {
     final w = size.width;
     final h = size.height;
     final rect = Offset.zero & size;
+    // The lamp is the accent dimmed almost to the base: a grey light on a
+    // black ground, so white type stays legible at the very top.
+    final lamp = Color.lerp(bg, accent, 0.20)!;
 
     // Light pouring from the top, falling into the base by mid-screen.
     canvas.drawRect(
@@ -232,9 +236,9 @@ class _LitGround extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.lerp(accent, Colors.white, 0.18)!,
-            accent,
-            Color.lerp(accent, bg, 0.55)!,
+            Color.lerp(lamp, accent, 0.10)!,
+            lamp,
+            Color.lerp(lamp, bg, 0.55)!,
             bg,
             bg,
           ],
@@ -254,12 +258,12 @@ class _LitGround extends CustomPainter {
 
     // The hot spot of the lamp, top right.
     bloom(Offset(w * 0.72, h * 0.04), w * 0.85,
-        Color.lerp(accent, Colors.white, 0.45)!.withValues(alpha: 0.55));
+        accent.withValues(alpha: 0.10));
     // Shade pooling from the left, so the headline sits on darker ground.
     bloom(Offset(w * 0.0, h * 0.46), w * 0.95, bg.withValues(alpha: 0.6));
     // A second, quieter lamp low down so the bottom of a long page never goes
     // flat black. Same hue as the top: one light, one product.
-    bloom(Offset(w * 0.5, h * 1.12), w * 0.95, accent.withValues(alpha: 0.22));
+    bloom(Offset(w * 0.5, h * 1.12), w * 0.95, accent.withValues(alpha: 0.05));
 
     final g = grain;
     if (g != null) {
@@ -324,17 +328,17 @@ class GlassPanel extends StatelessWidget {
                   end: Alignment.bottomRight,
                   colors: accent
                       ? [
-                          c.accent.withValues(alpha: dark ? 0.30 : 0.16),
-                          c.accent.withValues(alpha: dark ? 0.10 : 0.07),
+                          c.accent.withValues(alpha: dark ? 0.14 : 0.16),
+                          c.accent.withValues(alpha: dark ? 0.05 : 0.07),
                         ]
                       : [
-                          tint.withValues(alpha: dark ? 0.34 : 0.90),
-                          tint.withValues(alpha: dark ? 0.16 : 0.74),
+                          tint.withValues(alpha: dark ? 0.55 : 0.90),
+                          tint.withValues(alpha: dark ? 0.30 : 0.74),
                         ],
                 ),
                 border: Border.all(
                   color: accent
-                      ? c.accent.withValues(alpha: 0.42)
+                      ? c.accent.withValues(alpha: 0.22)
                       : c.ink.withValues(alpha: dark ? 0.10 : 0.08),
                 ),
               ),
@@ -453,7 +457,7 @@ ThemeData buildTheme(Brightness brightness) {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: c.surface.withValues(alpha: 0.72),
       surfaceTintColor: Colors.transparent,
-      indicatorColor: c.accent.withValues(alpha: 0.20),
+      indicatorColor: c.accent.withValues(alpha: 0.12),
       elevation: 0,
       height: 68,
       labelTextStyle: WidgetStateProperty.all(text.labelSmall),

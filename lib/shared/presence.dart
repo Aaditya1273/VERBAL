@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
 
-/// The other person's presence: a lit orb, not a face.
+/// The other person: one black ball, two white marks, a halo of colour.
 ///
-/// A drawn face reads as a toy. A light reads as a presence — and a light can
-/// still say everything the session needs it to: it breathes while the other
-/// person listens, swells as they speak, and runs hot as the pressure climbs.
+/// The interface is monochrome on purpose, so this is the only colour on any
+/// screen — the eye always knows where the other person is. It breathes while
+/// they listen, swells as they speak, and as the pressure climbs the halo
+/// runs warm and the two marks narrow to a squint.
 class Presence extends StatefulWidget {
   const Presence({
     super.key,
@@ -107,105 +108,69 @@ class _OrbPainter extends CustomPainter {
   final Color signal;
   final Color bg;
 
-  /// The light inside: four coloured plumes that drift around the centre.
-  /// Cool when calm, bleeding to warm as the pressure climbs.
-  List<Color> get _plumes => [
-        Color.lerp(const Color(0xFF2EE6C5), const Color(0xFFFF7A1A), heat)!,
-        Color.lerp(const Color(0xFF38BDF8), const Color(0xFFFF3D3D), heat)!,
-        Color.lerp(const Color(0xFF8BF0D8), const Color(0xFFFFB020), heat)!,
-        Color.lerp(accent, signal, heat)!,
-      ];
+  /// Soft spectrum, never neon: the halo is colour, not a warning light.
+  static const _spectrum = [
+    Color(0xFFFF8E8E),
+    Color(0xFFFFC98A),
+    Color(0xFFBDF2A1),
+    Color(0xFF8ADFFF),
+    Color(0xFFB79CFF),
+    Color(0xFFFF9BD8),
+    Color(0xFFFF8E8E),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
     final centre = size.center(Offset.zero);
-    final tone = Color.lerp(accent, signal, heat)!;
 
     // Speaking swells quickly; listening breathes slowly; idle barely moves.
     final wave = math.sin(t * math.pi * 2);
     final swell = speaking
-        ? 0.07 * (math.sin(t * math.pi * 6) + 1) / 2
+        ? 0.08 * (math.sin(t * math.pi * 6) + 1) / 2
         : listening
-            ? 0.04 * (wave + 1) / 2
-            : 0.015 * (wave + 1) / 2;
+            ? 0.045 * (wave + 1) / 2
+            : 0.02 * (wave + 1) / 2;
     final r = size.width * 0.30 * (1 + swell);
-    final sphere = Rect.fromCircle(center: centre, radius: r);
 
-    // 1. Halo: wide, soft, hotter under pressure.
+    // 1. Halo: a ring of spectrum, blurred wide, turning slowly. Under
+    //    pressure it bleeds toward the signal colour and reaches further.
+    final halo = Rect.fromCircle(center: centre, radius: r * 1.5);
     canvas.drawCircle(
       centre,
-      r * (1.45 + heat * 0.25),
+      r * (1.18 + heat * 0.18),
       Paint()
-        ..color = tone.withValues(alpha: 0.26 + heat * 0.14)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.5),
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = r * (0.55 + heat * 0.25)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.42)
+        ..shader = SweepGradient(
+          transform: GradientRotation(t * math.pi * 2),
+          colors: [
+            for (final c in _spectrum)
+              Color.lerp(c, signal, heat * 0.8)!
+                  .withValues(alpha: 0.55 + heat * 0.25),
+          ],
+        ).createShader(halo),
     );
 
-    // 2. The glass body: dark, so the plumes read as light inside it.
-    canvas.drawCircle(
-      centre,
-      r,
-      Paint()..color = Color.lerp(bg, tone, 0.18)!,
-    );
-
-    // 3. Plumes, additive, clipped to the sphere. The whole point of the orb
-    //    is that the light moves; a still sphere is a bead.
-    canvas.save();
-    canvas.clipPath(Path()..addOval(sphere));
-    canvas.saveLayer(sphere, Paint());
-    final speed = speaking ? 3.0 : listening ? 1.4 : 1.0;
-    final plumes = _plumes;
-    for (var i = 0; i < plumes.length; i++) {
-      final phase = t * math.pi * 2 * speed + i * (math.pi * 2 / plumes.length);
-      final orbit = r * (0.38 + 0.12 * math.sin(phase * 0.7 + i));
-      final at = centre +
-          Offset(math.cos(phase) * orbit, math.sin(phase * 1.3) * orbit);
-      final blobR = r * (0.62 + 0.14 * math.sin(phase * 1.1 + i * 2));
-      canvas.drawCircle(
-        at,
-        blobR,
-        Paint()
-          ..blendMode = BlendMode.plus
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blobR * 0.55)
-          ..shader = RadialGradient(
-            colors: [
-              plumes[i].withValues(alpha: 0.85),
-              plumes[i].withValues(alpha: 0),
-            ],
-          ).createShader(Rect.fromCircle(center: at, radius: blobR)),
-      );
-    }
-    canvas.restore();
-
-    // 4. Fresnel: the edge of a sphere is darker and denser than its centre.
+    // 2. Body: near-black, lit faintly from the top-left so it reads as a
+    //    sphere against a black ground.
+    final body = Rect.fromCircle(center: centre, radius: r);
     canvas.drawCircle(
       centre,
       r,
       Paint()
         ..shader = RadialGradient(
+          center: const Alignment(-0.5, -0.6),
+          radius: 1.1,
           colors: [
-            Colors.transparent,
-            Colors.transparent,
-            bg.withValues(alpha: 0.55),
+            Color.lerp(bg, accent, 0.26)!,
+            Color.lerp(bg, accent, 0.08)!,
+            bg,
           ],
-          stops: const [0.0, 0.72, 1.0],
-        ).createShader(sphere),
+          stops: const [0.0, 0.45, 1.0],
+        ).createShader(body),
     );
-
-    // 5. Specular: one soft highlight, top-left, where the light is.
-    final hl = Rect.fromCenter(
-      center: centre + Offset(-r * 0.36, -r * 0.46),
-      width: r * 0.78,
-      height: r * 0.44,
-    );
-    canvas.drawOval(
-      hl,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.42)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.14),
-    );
-    canvas.restore();
-
-    // 6. Rim: a hairline that catches the light on the top edge.
+    // Rim light along the top edge.
     canvas.drawCircle(
       centre,
       r,
@@ -216,12 +181,34 @@ class _OrbPainter extends CustomPainter {
           startAngle: math.pi,
           endAngle: math.pi * 3,
           colors: [
-            Colors.white.withValues(alpha: 0.75),
-            Colors.white.withValues(alpha: 0.06),
-            Colors.white.withValues(alpha: 0.75),
+            accent.withValues(alpha: 0.55),
+            accent.withValues(alpha: 0.04),
+            accent.withValues(alpha: 0.55),
           ],
-        ).createShader(sphere),
+        ).createShader(body),
     );
+
+    // 3. The two marks: highlights that double as eyes. Calm, they are tall
+    //    and open; under pressure they narrow to a squint.
+    final markH = r * (0.36 - heat * 0.18);
+    final markW = r * 0.14;
+    final mark = Paint()..color = accent;
+    canvas.save();
+    canvas.translate(centre.dx + r * 0.30, centre.dy - r * 0.30);
+    canvas.rotate(-0.32);
+    for (final dx in [-r * 0.22, r * 0.22]) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(
+              center: Offset(dx, dx > 0 ? -r * 0.06 : 0),
+              width: markW,
+              height: markH),
+          Radius.circular(markW),
+        ),
+        mark,
+      );
+    }
+    canvas.restore();
   }
 
   @override
