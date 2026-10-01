@@ -452,7 +452,8 @@ class PracticeController extends StateNotifier<PracticeState> {
   Future<int> _deliver(String text, {int? seq}) async {
     if (_disposed) return 0;
 
-    final turn = Turn(speaker: Speaker.actor, text: text, at: DateTime.now());
+    final turn =
+        Turn(speaker: Speaker.actor, text: plainSpeech(text), at: DateTime.now());
     _set(state.copyWith(
       turns: [...state.turns, turn],
       phase: VoicePhase.speaking,
@@ -660,3 +661,10 @@ final practiceControllerProvider = StateNotifierProvider.autoDispose
     ref: ref,
   );
 });
+
+/// Dashes are a writer's habit, not a speaker's. A line shown large on
+/// screen and read aloud should be plain sentences.
+String plainSpeech(String text) => text
+    .replaceAll(RegExp(r'\s*[—–]\s*'), ', ')
+    .replaceAll(RegExp(r'\s*--\s*'), ', ')
+    .replaceAll(', ,', ',');

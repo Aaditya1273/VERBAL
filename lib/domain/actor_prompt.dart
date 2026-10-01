@@ -67,6 +67,9 @@ After each user turn, report at most one of these in "pitfallId". Report one onl
 when you can point to the exact words that show it. If none applies, return "".
 ${pitfalls.map((p) => '- ${p.id}: ${p.detectionHint}').join('\n')}
 
+STYLE
+Plain spoken sentences. Never use dashes; use commas or full stops.
+
 $safetyRules
 
 OUTPUT FORMAT — return only this JSON object, nothing else:

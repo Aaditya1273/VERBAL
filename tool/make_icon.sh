@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 # Generate VERBAL's launcher icon at every size Android and Devpost need.
 #
-# The mark is the mascot at rest, exactly as it appears in the app, centred
-# on the app's black ground. One source, every size, so the icon can never
-# drift from the character.
+# The mark is the mascot at rest, leaning out of the bottom-left of a dark
+# rounded tile, large enough to bleed past its edge. One source, every size,
+# so the icon can never drift from the character.
 #
 #     sh tool/make_icon.sh
 set -e
@@ -12,8 +12,13 @@ src=assets/mascot/neutre.png
 bg='#09090B'
 
 render() { # size out
-  magick -size "$1x$1" "xc:$bg" \( "$src" -resize "$(( $1 * 78 / 100 ))x$(( $1 * 78 / 100 ))" \) \
-    -gravity center -composite "$2"
+  s=$1
+  r=$(( s * 23 / 100 ))            # corner radius
+  m=$(( s * 112 / 100 ))           # the mascot, larger than the tile
+  magick -size "${s}x${s}" gradient:'#3B3B40-#0B0B0D' \
+    \( "$src" -resize "${m}x${m}" \) -geometry "-$(( s * 14 / 100 ))+$(( s * 22 / 100 ))" -composite \
+    \( -size "${s}x${s}" xc:none -draw "roundrectangle 0,0,$(( s - 1 )),$(( s - 1 )),$r,$r" \) \
+    -compose DstIn -composite -background none "$2"
   echo "  $2"
 }
 

@@ -1,7 +1,7 @@
 import 'scenario.dart';
 
 /// The starter library. Three scenarios, authored properly, rather than twenty
-/// shallow ones. Adding a scenario means adding data here — no UI changes.
+/// shallow ones. Adding a scenario means adding data here, no UI changes.
 class ScenarioLibrary {
   const ScenarioLibrary._();
 
@@ -42,7 +42,7 @@ class ScenarioLibrary {
     userObjective:
         'Make the seriousness unmistakable, stay specific, and keep the relationship intact.',
     openingLine:
-        'Hey — you said you wanted to talk? Is everything okay? You sounded a bit formal.',
+        'Hey, you said you wanted to talk? Is everything okay? You sounded a bit formal.',
     actor: ActorProfile(
       name: 'Maya',
       role: 'Senior Analyst on your team',
@@ -169,7 +169,7 @@ class ScenarioLibrary {
       name: 'Ray',
       role: 'Your director',
       personality:
-          'Blunt, numerate, pressed for time. Not hostile — he simply defaults to no '
+          'Blunt, numerate, pressed for time. Not hostile, he simply defaults to no '
           'and expects you to make the case. Respects specifics, dismisses vagueness.',
       objective:
           'Keep the budget intact and defer the decision to the next cycle without losing you.',
@@ -182,7 +182,7 @@ class ScenarioLibrary {
       ],
       constraints: [
         'Do not invent company-wide policies, salary bands or legal constraints that were not described.',
-        'Do not promise a specific number or a signed offer — you can only commit to a next step.',
+        'Do not promise a specific number or a signed offer, you can only commit to a next step.',
         'Do not become abusive. Scepticism, not contempt.',
       ],
       voice: 'Charon',
@@ -200,7 +200,7 @@ class ScenarioLibrary {
       Objection(
         id: 'thats_the_job',
         line:
-            'Taking on more when someone leaves — that is just what the job is. Everyone stepped up.',
+            'Taking on more when someone leaves, that is just what the job is. Everyone stepped up.',
         intent:
             'Reframe extra responsibility as normal, unremarkable behaviour.',
         resolvedWhen:
@@ -290,7 +290,7 @@ class ScenarioLibrary {
           'Sharp, fast, and angry in a controlled way. Interrupts. Uses silence as a weapon. '
           'Respects someone who does not flinch, and despises being managed or soothed.',
       objective:
-          'Establish that this failure was entirely yours, and extract a concession — money, people, or a commitment.',
+          'Establish that this failure was entirely yours, and extract a concession, money, people, or a commitment.',
       initialEmotion: Emotion.frustrated,
       knownFacts: [
         'The launch slipped by nine days.',
@@ -393,13 +393,13 @@ class ScenarioLibrary {
     category: ScenarioCategory.conflict,
     context:
         'Jon sits on the team next to yours. Over four months he has steadily '
-        'moved his reporting work onto you — first as a favour, now as an '
+        'moved his reporting work onto you, first as a favour, now as an '
         'assumption. It costs you about six hours a week. You like him, he is '
         'well liked generally, and you have never actually said no.',
     userObjective:
         'Say no unambiguously, without apologising it away or damaging the relationship.',
     openingLine:
-        'Hey — perfect timing. I was going to send you the numbers for the Thursday report. Same as usual?',
+        'Hey, perfect timing. I was going to send you the numbers for the Thursday report. Same as usual?',
     actor: ActorProfile(
       name: 'Jon',
       role: 'A colleague on the neighbouring team',
@@ -509,7 +509,7 @@ class ScenarioLibrary {
     context:
         'Performance conversations with Tom have happened twice before and the '
         'situation has not changed. The decision to end his employment is final '
-        'and was made before this meeting. Your job here is not to debate it — '
+        'and was made before this meeting. Your job here is not to debate it, '
         'it is to deliver it clearly and treat him with respect.',
     userObjective:
         'Deliver the decision unambiguously in the first minute, hold it, and stay composed and kind.',
@@ -518,7 +518,7 @@ class ScenarioLibrary {
       name: 'Tom',
       role: 'Member of your team',
       personality:
-          'Shocked at first, then bargaining, then hurt. Not aggressive — the pressure '
+          'Shocked at first, then bargaining, then hurt. Not aggressive, the pressure '
           'here is emotional, not combative. Long pauses. Asks questions the user cannot fully answer.',
       objective:
           'Find a way to reverse or delay the decision, and to understand why this is happening to him.',
@@ -533,7 +533,7 @@ class ScenarioLibrary {
         'Never state or imply what is legally required, permitted, or valid in any jurisdiction.',
         'Do not reference specific severance law, employment statutes or tribunal outcomes.',
         'Do not become threatening. The register is grief and disbelief, not aggression.',
-        'Do not accept the decision instantly — but do not refuse to leave the room either.',
+        'Do not accept the decision instantly, but do not refuse to leave the room either.',
       ],
       voice: 'Enceladus',
     ),
@@ -608,7 +608,7 @@ class ScenarioLibrary {
     ],
     successCriteria: [
       'Delivered the decision within the first two turns, without burying it.',
-      'Used the past tense — the decision is made, not under discussion.',
+      'Used the past tense, the decision is made, not under discussion.',
       'Acknowledged the emotional impact at least once, genuinely.',
       'Did not over-explain, blame others, or offer false hope.',
     ],
