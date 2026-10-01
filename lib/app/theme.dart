@@ -26,8 +26,8 @@ class VerbalTokens {
   static const darkSurface = Color(0xFF171B22);
   static const darkRaised = Color(0xFF1F242D);
   static const darkInk = Color(0xFFF2F3F5);
-  static const darkMuted = Color(0xFF9AA3AF);
-  static const darkLine = Color(0xFF262C36);
+  static const darkMuted = Color(0xFFB3BBC6);
+  static const darkLine = Color(0xFF272B31);
 
   /// Accent — calm, professional, never neon.
   static const accentLight = Color(0xFF175E54);
@@ -400,7 +400,9 @@ ThemeData buildTheme(Brightness brightness) {
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: text.titleMedium,
+      // Titles sit on the same left edge as the page content below them.
+      titleSpacing: VerbalTokens.lg,
+      titleTextStyle: text.headlineSmall,
       iconTheme: IconThemeData(color: c.ink),
       systemOverlayStyle:
           isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
@@ -434,9 +436,19 @@ ThemeData buildTheme(Brightness brightness) {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: c.accent,
+        // Ink, not accent: an accent label vanishes on the lit top of the page.
+        foregroundColor: c.ink,
         textStyle: text.labelLarge,
       ),
+    ),
+    tabBarTheme: TabBarThemeData(
+      dividerColor: Colors.transparent,
+      indicatorSize: TabBarIndicatorSize.label,
+      indicatorColor: c.accent,
+      labelColor: c.ink,
+      unselectedLabelColor: c.muted,
+      labelStyle: text.titleSmall,
+      unselectedLabelStyle: text.titleSmall,
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: c.surface.withValues(alpha: 0.72),

@@ -27,6 +27,10 @@ class ProfileScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('You'),
           bottom: const TabBar(
+            // Left-aligned with the title and the content, not stretched.
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            padding: EdgeInsets.only(left: VerbalTokens.sm),
             tabs: [Tab(text: 'Progress'), Tab(text: 'Settings')],
           ),
         ),

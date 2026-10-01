@@ -112,7 +112,6 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
         if (!didPop) _end();
       },
       child: Scaffold(
-        backgroundColor: c.bg,
         appBar: AppBar(
           automaticallyImplyLeading: false,
           titleSpacing: VerbalTokens.lg,
@@ -136,13 +135,6 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
             ],
           ),
           actions: [
-            _Progress(
-              handled: _controller.engine.handledObjectionIds.length,
-              total: _controller.engine.scheduledObjections.length,
-            ),
-            const SizedBox(width: VerbalTokens.md),
-            _PressureMeter(pressure: state.pressure),
-            const SizedBox(width: VerbalTokens.sm),
             TextButton(onPressed: _end, child: const Text('End')),
             const SizedBox(width: VerbalTokens.sm),
           ],
@@ -155,11 +147,16 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                     Expanded(
                       child: _showTranscript
                           ? _Transcript(turns: state.turns)
-                          : _ActorStage(state: state),
+                          : _ActorStage(
+                              state: state,
+                              handled: _controller
+                                  .engine.handledObjectionIds.length,
+                              total: _controller
+                                  .engine.scheduledObjections.length,
+                            ),
                     ),
                     if (state.lastPitfall != null)
                       _PitfallFlash(pitfall: state.lastPitfall!),
-                    _StatusRow(state: state),
                     Waveform(
                       levels: state.levels,
                       active: state.phase == VoicePhase.listening,
@@ -248,9 +245,15 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
 
 /// The other person's current line, given the whole stage.
 class _ActorStage extends StatelessWidget {
-  const _ActorStage({required this.state});
+  const _ActorStage({
+    required this.state,
+    required this.handled,
+    required this.total,
+  });
 
   final PracticeState state;
+  final int handled;
+  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -268,12 +271,23 @@ class _ActorStage extends StatelessWidget {
             listening: state.phase == VoicePhase.listening,
           ),
           const SizedBox(height: VerbalTokens.md),
-          Pill(
-            state.emotion.label,
-            icon: Icons.psychology_outlined,
-            tone: state.pressure > 0.6 ? c.signal : c.muted,
+          // One quiet line of instruments: mood, pressure, objections handled.
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Pill(
+                state.emotion.label,
+                tone: state.pressure > 0.6 ? c.signal : c.muted,
+              ),
+              const SizedBox(width: VerbalTokens.md),
+              _PressureMeter(pressure: state.pressure),
+              if (total > 0) ...[
+                const SizedBox(width: VerbalTokens.md),
+                _Progress(handled: handled, total: total),
+              ],
+            ],
           ),
-          const SizedBox(height: VerbalTokens.lg),
+          const SizedBox(height: VerbalTokens.xl),
           AnimatedSwitcher(
             duration: context.reduceMotion
                 ? Duration.zero
@@ -377,104 +391,6 @@ class _PitfallFlash extends StatelessWidget {
   }
 }
 
-/// LISTENING / THINKING / SPEAKING — the system state, always visible.
-class _StatusRow extends StatelessWidget {
-  const _StatusRow({required this.state});
-
-  final PracticeState state;
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    final isLive = state.phase == VoicePhase.listening;
-    final color = switch (state.phase) {
-      VoicePhase.listening => c.signal,
-      VoicePhase.error => c.signal,
-      VoicePhase.speaking => c.accent,
-      _ => c.muted,
-    };
-
-    return Semantics(
-      liveRegion: true,
-      label: 'Status: ${state.phase.label.toLowerCase()}',
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: VerbalTokens.sm),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _Dot(color: color, pulsing: isLive),
-            const SizedBox(width: VerbalTokens.sm),
-            Text(
-              state.phase.label,
-              style: context.t.labelMedium?.copyWith(color: color),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Dot extends StatefulWidget {
-  const _Dot({required this.color, required this.pulsing});
-
-  final Color color;
-  final bool pulsing;
-
-  @override
-  State<_Dot> createState() => _DotState();
-}
-
-class _DotState extends State<_Dot> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-  );
-
-  @override
-  void didUpdateWidget(_Dot old) {
-    super.didUpdateWidget(old);
-    _sync();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _sync();
-  }
-
-  void _sync() {
-    if (widget.pulsing && !context.reduceMotion) {
-      _c.repeat(reverse: true);
-    } else {
-      _c.stop();
-      _c.value = 1;
-    }
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0.35, end: 1).animate(_c),
-      child: Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle),
-      ),
-    );
-  }
-}
-
-/// How far through the conversation's resistance the user has got.
-///
-/// One dot per objection this difficulty will use — filled once handled. It
-/// answers "how long is this going to go on for", which is otherwise invisible.
 class _Progress extends StatelessWidget {
   const _Progress({required this.handled, required this.total});
 
@@ -501,7 +417,9 @@ class _Progress extends StatelessWidget {
                 height: 6,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: i < handled ? c.accent : c.line,
+                  color: i < handled
+                      ? c.accent
+                      : c.ink.withValues(alpha: 0.18),
                 ),
               ),
             ),
@@ -532,7 +450,7 @@ class _PressureMeter extends StatelessWidget {
             child: LinearProgressIndicator(
               value: value,
               minHeight: 4,
-              backgroundColor: c.line,
+              backgroundColor: c.ink.withValues(alpha: 0.10),
               valueColor:
                   AlwaysStoppedAnimation(value > 0.6 ? c.signal : c.muted),
             ),
@@ -592,7 +510,8 @@ class _Controls extends StatelessWidget {
                   height: VerbalTokens.tap + 12,
                   decoration: BoxDecoration(
                     color: listening ? c.signal : (busy ? c.raised : c.accent),
-                    borderRadius: BorderRadius.circular(VerbalTokens.radius),
+                    borderRadius:
+                        BorderRadius.circular(VerbalTokens.radiusPill),
                   ),
                   alignment: Alignment.center,
                   child: Text(
@@ -600,7 +519,7 @@ class _Controls extends StatelessWidget {
                         ? 'RELEASE TO SEND'
                         : (busy ? state.phase.label : 'HOLD TO SPEAK'),
                     style: context.t.labelLarge?.copyWith(
-                      color: busy ? c.muted : Colors.white,
+                      color: busy ? c.muted : c.bg,
                       letterSpacing: 0.8,
                     ),
                   ),

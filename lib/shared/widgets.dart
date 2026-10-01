@@ -165,7 +165,7 @@ class SkillBar extends StatelessWidget {
                 builder: (context, value, _) => LinearProgressIndicator(
                   value: value,
                   minHeight: 6,
-                  backgroundColor: c.line,
+                  backgroundColor: c.ink.withValues(alpha: 0.08),
                   valueColor: AlwaysStoppedAnimation(
                     score >= 70 ? c.accent : (score >= 45 ? c.muted : c.signal),
                   ),
@@ -219,6 +219,8 @@ class _WaveformPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Nothing to say when nobody is talking: an idle row of dots is noise.
+    if (!active) return;
     const barWidth = 3.0;
     const gap = 4.0;
     final count = (size.width / (barWidth + gap)).floor();
