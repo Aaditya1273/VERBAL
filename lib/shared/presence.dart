@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
 
-/// The other person: one black ball, two white marks, a halo of colour.
+/// The other person: a white ball, two eyes, a halo of colour.
 ///
 /// The interface is monochrome on purpose, so this is the only colour on any
-/// screen — the eye always knows where the other person is. It breathes while
-/// they listen, swells as they speak, and as the pressure climbs the halo
-/// runs warm and the two marks narrow to a squint.
+/// screen — the eye always knows where the other person is. It does not bob
+/// about; what makes it alive is the halo, which beats with the voice, and
+/// the eyes, which glance, blink, open wide to listen and narrow under
+/// pressure.
 class Presence extends StatefulWidget {
   const Presence({
     super.key,
@@ -17,15 +18,19 @@ class Presence extends StatefulWidget {
     this.heat = 0,
     this.speaking = false,
     this.listening = false,
+    this.level = 0,
   });
 
   final double size;
 
-  /// 0 calm → 1 hostile. Drives the colour.
+  /// 0 calm → 1 hostile. Drives the halo's warmth and the eyes' squint.
   final double heat;
 
   final bool speaking;
   final bool listening;
+
+  /// 0..1 microphone level while listening, so the halo beats with the user.
+  final double level;
 
   @override
   State<Presence> createState() => _PresenceState();
@@ -33,9 +38,11 @@ class Presence extends StatefulWidget {
 
 class _PresenceState extends State<Presence>
     with SingleTickerProviderStateMixin {
+  /// One loop is six seconds: long enough that glances and blinks do not
+  /// visibly repeat, short enough that the halo's turn never jumps.
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 2800),
+    duration: const Duration(seconds: 6),
   );
 
   @override
@@ -73,14 +80,15 @@ class _PresenceState extends State<Presence>
         child: AnimatedBuilder(
           animation: _c,
           builder: (context, _) => CustomPaint(
-            painter: _OrbPainter(
-              t: still ? 0.5 : _c.value,
+            painter: _MascotPainter(
+              seconds: (still ? 0.5 : _c.value) * 6,
               heat: widget.heat.clamp(0.0, 1.0),
               speaking: widget.speaking && !still,
               listening: widget.listening,
-              accent: c.accent,
-              signal: c.signal,
+              level: widget.level.clamp(0.0, 1.0),
+              ink: c.ink,
               bg: c.bg,
+              signal: c.signal,
             ),
           ),
         ),
@@ -89,24 +97,27 @@ class _PresenceState extends State<Presence>
   }
 }
 
-class _OrbPainter extends CustomPainter {
-  const _OrbPainter({
-    required this.t,
+class _MascotPainter extends CustomPainter {
+  const _MascotPainter({
+    required this.seconds,
     required this.heat,
     required this.speaking,
     required this.listening,
-    required this.accent,
-    required this.signal,
+    required this.level,
+    required this.ink,
     required this.bg,
+    required this.signal,
   });
 
-  final double t;
+  /// Time within the six-second loop.
+  final double seconds;
   final double heat;
   final bool speaking;
   final bool listening;
-  final Color accent;
-  final Color signal;
+  final double level;
+  final Color ink;
   final Color bg;
+  final Color signal;
 
   /// Soft spectrum, never neon: the halo is colour, not a warning light.
   static const _spectrum = [
@@ -119,103 +130,135 @@ class _OrbPainter extends CustomPainter {
     Color(0xFFFF8E8E),
   ];
 
+  /// Speech has a rhythm — syllables inside phrases. Two sines, one fast and
+  /// one slow, rectified, read as talking without any audio analysis.
+  double get _beat {
+    final syllable = math.sin(seconds * math.pi * 2 * 4.3);
+    final phrase = math.sin(seconds * math.pi * 2 * 0.9 + 0.7);
+    return math.max(0.0, syllable * phrase);
+  }
+
+  /// How alive the halo is right now, 0..1.
+  double get _energy {
+    if (speaking) return 0.3 + 0.7 * _beat;
+    if (listening) return 0.25 + 0.75 * level;
+    return 0.12 + 0.06 * (math.sin(seconds * math.pi / 3) + 1) / 2;
+  }
+
+  /// A small deterministic number per glance, so the eyes wander rather
+  /// than drift on a sine.
+  static double _noise(int seed, int salt) {
+    final x = math.sin(seed * 12.9898 + salt * 78.233) * 43758.5453;
+    return (x - x.floorToDouble()) * 2 - 1;
+  }
+
+  /// Where the eyes are looking, as a fraction of the ball's radius.
+  Offset get _gaze {
+    // Listening: straight at the user, held still.
+    if (listening) return Offset.zero;
+    const glance = 2.4;
+    final seg = (seconds / glance).floor();
+    final f = (seconds - seg * glance) / glance;
+    final from = Offset(_noise(seg, 1), _noise(seg, 2));
+    final to = Offset(_noise(seg + 1, 1), _noise(seg + 1, 2));
+    // Move during the first fifth of each glance, then hold.
+    final k = Curves.easeInOut.transform((f / 0.2).clamp(0.0, 1.0));
+    final at = Offset.lerp(from, to, k)!;
+    return at * (speaking ? 0.05 : 0.08);
+  }
+
+  /// 1 open, 0 shut.
+  double get _lid {
+    const every = 3.7;
+    const blink = 0.14;
+    final phase = seconds % every;
+    if (phase < blink) return 1 - math.sin(math.pi * phase / blink);
+    return 1;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final centre = size.center(Offset.zero);
+    final r = size.width * 0.30;
+    final energy = _energy;
 
-    // Speaking swells quickly; listening breathes slowly; idle barely moves.
-    final wave = math.sin(t * math.pi * 2);
-    final swell = speaking
-        ? 0.08 * (math.sin(t * math.pi * 6) + 1) / 2
-        : listening
-            ? 0.045 * (wave + 1) / 2
-            : 0.02 * (wave + 1) / 2;
-    final r = size.width * 0.30 * (1 + swell);
-
-    // 1. Halo: a ring of spectrum, blurred wide, turning slowly. Under
-    //    pressure it bleeds toward the signal colour and reaches further.
-    final halo = Rect.fromCircle(center: centre, radius: r * 1.5);
+    // 1. Halo: a ring of spectrum, blurred wide, turning slowly. It beats
+    //    with the voice, and under pressure bleeds toward the signal colour.
+    final haloRect = Rect.fromCircle(center: centre, radius: r * 1.6);
     canvas.drawCircle(
       centre,
-      r * (1.18 + heat * 0.18),
+      r * (1.16 + 0.10 * energy + heat * 0.14),
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = r * (0.55 + heat * 0.25)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.42)
+        ..strokeWidth = r * (0.40 + 0.35 * energy + heat * 0.2)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.40)
         ..shader = SweepGradient(
-          transform: GradientRotation(t * math.pi * 2),
+          transform: GradientRotation(seconds * math.pi / 3),
           colors: [
             for (final c in _spectrum)
               Color.lerp(c, signal, heat * 0.8)!
-                  .withValues(alpha: 0.55 + heat * 0.25),
+                  .withValues(alpha: 0.30 + 0.65 * energy),
           ],
-        ).createShader(halo),
+        ).createShader(haloRect),
     );
 
-    // 2. Body: near-black, lit faintly from the top-left so it reads as a
-    //    sphere against a black ground.
+    // 2. Body: white, shaded softly toward the bottom-right so it reads as a
+    //    ball rather than a disc. It stays put.
     final body = Rect.fromCircle(center: centre, radius: r);
     canvas.drawCircle(
       centre,
       r,
       Paint()
         ..shader = RadialGradient(
-          center: const Alignment(-0.5, -0.6),
-          radius: 1.1,
+          center: const Alignment(-0.4, -0.5),
+          radius: 1.15,
           colors: [
-            Color.lerp(bg, accent, 0.26)!,
-            Color.lerp(bg, accent, 0.08)!,
-            bg,
+            ink,
+            ink,
+            Color.lerp(ink, bg, 0.22)!,
           ],
-          stops: const [0.0, 0.45, 1.0],
-        ).createShader(body),
-    );
-    // Rim light along the top edge.
-    canvas.drawCircle(
-      centre,
-      r,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..shader = SweepGradient(
-          startAngle: math.pi,
-          endAngle: math.pi * 3,
-          colors: [
-            accent.withValues(alpha: 0.55),
-            accent.withValues(alpha: 0.04),
-            accent.withValues(alpha: 0.55),
-          ],
+          stops: const [0.0, 0.55, 1.0],
         ).createShader(body),
     );
 
-    // 3. The two marks: highlights that double as eyes. Calm, they are tall
-    //    and open; under pressure they narrow to a squint.
-    final markH = r * (0.36 - heat * 0.18);
-    final markW = r * 0.14;
-    final mark = Paint()..color = accent;
+    // 3. Eyes: two capsules, top-right, tilted. They glance, blink, open
+    //    wide to listen and narrow to a squint under pressure. Hot, the
+    //    inner ends drop — a brow without drawing one.
+    final gaze = _gaze * r;
+    final open = _lid *
+        (listening ? 1.12 : 1.0) *
+        (1 - 0.55 * heat) *
+        (speaking ? 1 - 0.08 * _beat : 1);
+    final eyeH = math.max(r * 0.06, r * 0.40 * open);
+    final eyeW = r * 0.15;
+    final gap = r * 0.26 * (1 - 0.15 * heat);
+    final eye = Paint()..color = bg;
+
     canvas.save();
-    canvas.translate(centre.dx + r * 0.30, centre.dy - r * 0.30);
-    canvas.rotate(-0.32);
-    for (final dx in [-r * 0.22, r * 0.22]) {
+    canvas.translate(
+        centre.dx + r * 0.22 + gaze.dx, centre.dy - r * 0.22 + gaze.dy);
+    for (final side in [-1, 1]) {
+      canvas.save();
+      canvas.translate(side * gap / 2, side > 0 ? -r * 0.05 : 0);
+      canvas.rotate(-0.25 + side * 0.35 * heat);
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(
-              center: Offset(dx, dx > 0 ? -r * 0.06 : 0),
-              width: markW,
-              height: markH),
-          Radius.circular(markW),
+          Rect.fromCenter(center: Offset.zero, width: eyeW, height: eyeH),
+          Radius.circular(eyeW),
         ),
-        mark,
+        eye,
       );
+      canvas.restore();
     }
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(_OrbPainter old) =>
-      old.t != t ||
+  bool shouldRepaint(_MascotPainter old) =>
+      old.seconds != seconds ||
       old.heat != heat ||
       old.speaking != speaking ||
       old.listening != listening ||
-      old.accent != accent;
+      old.level != level ||
+      old.ink != ink;
 }

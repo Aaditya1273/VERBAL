@@ -269,6 +269,7 @@ class _ActorStage extends StatelessWidget {
             heat: state.pressure,
             speaking: state.phase == VoicePhase.speaking,
             listening: state.phase == VoicePhase.listening,
+            level: state.levels.isEmpty ? 0 : state.levels.first,
           ),
           const SizedBox(height: VerbalTokens.md),
           // One quiet line of instruments: mood, pressure, objections handled.

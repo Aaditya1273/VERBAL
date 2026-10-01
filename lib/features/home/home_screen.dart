@@ -7,9 +7,9 @@ import '../../core/analytics.dart';
 import '../../core/billing.dart';
 import '../../domain/difficulty.dart';
 import '../../domain/playbook.dart';
-import '../../domain/progress.dart';
 import '../../domain/recommendation.dart';
 import '../../domain/session.dart';
+import '../../shared/presence.dart';
 import '../../shared/widgets.dart';
 
 /// What to practise next, how you are doing, and one strong action.
@@ -30,7 +30,6 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final next = ref.watch(nextPracticeProvider);
-    final profile = ref.watch(profileProvider);
     final playbook = ref.watch(playbookProvider);
     final allowance = ref.watch(allowanceProvider);
 
@@ -40,12 +39,15 @@ class HomeScreen extends ConsumerWidget {
           onRefresh: () async => invalidateUserData(ref),
           child: PageBody(
             children: [
-              const SizedBox(height: VerbalTokens.md),
+              const SizedBox(height: VerbalTokens.sm),
+              // The other person greets you before any words do.
+              const Center(child: Presence(size: 168)),
+              const SizedBox(height: VerbalTokens.sm),
               Text(_greeting(), style: context.t.bodyMedium),
               const SizedBox(height: VerbalTokens.xs),
               Text('Ready for your next conversation?',
                   style: context.t.displaySmall),
-              const SizedBox(height: VerbalTokens.xl),
+              const SizedBox(height: VerbalTokens.lg),
               next.when(
                 data: (n) => _NextPractice(
                   key: ValueKey('${n.scenario.id}:${n.difficulty.name}'),
@@ -77,12 +79,6 @@ class HomeScreen extends ConsumerWidget {
                 orElse: () => const SizedBox.shrink(),
               ),
               const SizedBox(height: VerbalTokens.xl),
-              profile.maybeWhen(
-                data: (p) => p.isEmpty
-                    ? const SizedBox.shrink()
-                    : _ProgressSummary(profile: p),
-                orElse: () => const SizedBox.shrink(),
-              ),
               playbook.maybeWhen(
                 data: (entries) => entries.isEmpty
                     ? _PlaybookTeaser(onOpen: onOpenScenarios)
@@ -156,6 +152,8 @@ class _NextPracticeState extends ConsumerState<_NextPractice> {
           Text(next.scenario.title, style: context.t.headlineSmall),
           const SizedBox(height: VerbalTokens.sm),
           Text(next.reason,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: context.t.bodyMedium?.copyWith(color: c.muted)),
           const SizedBox(height: VerbalTokens.md),
           Wrap(
@@ -172,39 +170,6 @@ class _NextPracticeState extends ConsumerState<_NextPractice> {
               onPressed: onPractise, child: const Text('Practise now')),
         ],
       ),
-    );
-  }
-}
-
-class _ProgressSummary extends StatelessWidget {
-  const _ProgressSummary({required this.profile});
-
-  final CommunicationProfile profile;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionLabel(
-          'Your progress',
-          trailing: Text('${profile.totalSessions} sessions',
-              style: context.t.labelSmall),
-        ),
-        VerbalCard(
-          child: Column(
-            children: [
-              for (final s in profile.standings.take(3))
-                SkillBar(
-                  skill: s.skill,
-                  score: s.score,
-                  delta: s.isReliable ? s.delta : null,
-                ),
-            ],
-          ),
-        ),
-        const SizedBox(height: VerbalTokens.xl),
-      ],
     );
   }
 }

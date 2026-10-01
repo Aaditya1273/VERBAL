@@ -257,6 +257,10 @@ void main() {
     await t.pumpWidget(buildApp(profile: await onboarded('feedback')));
     await t.pumpAndSettle();
 
+    // The mascot sits above the headline, so the button can start below
+    // the fold on a phone.
+    await t.ensureVisible(find.widgetWithText(FilledButton, 'Practise now'));
+    await t.pumpAndSettle();
     await t.tap(find.widgetWithText(FilledButton, 'Practise now'));
     await t.pumpAndSettle();
 

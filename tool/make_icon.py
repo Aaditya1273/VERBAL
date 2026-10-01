@@ -3,9 +3,9 @@
 
 Pure stdlib (zlib + struct) so it runs anywhere without Pillow.
 
-The mark is the mascot: one black ball, two white marks, a halo of colour on
-a black ground — the same thing the user talks to every session. Generous
-margin so it stays legible at 48px in a launcher.
+The mark is the mascot: a white ball with two eyes and a halo of colour on a
+black ground — the same character the user talks to every session. It is
+large and off-centre so it still reads at 48px in a launcher.
 
     python3 tool/make_icon.py
 """
@@ -17,8 +17,7 @@ from pathlib import Path
 
 # Brand tokens, matching lib/app/theme.dart.
 BG = (0x09, 0x09, 0x0B)       # VerbalTokens.darkBg — the ground
-BODY = (0x14, 0x14, 0x16)     # the ball, a shade above the ground
-INK = (0xF5, 0xF5, 0xF7)      # the two marks
+INK = (0xF5, 0xF5, 0xF7)      # the ball
 
 # The halo's spectrum, matching the mascot in lib/shared/presence.dart.
 SPECTRUM = [
@@ -38,22 +37,26 @@ def _spectrum_at(angle: float):
 
 
 def _mix(base, top, alpha):
-    return tuple(int(base[k] + (top[k] - base[k]) * alpha) for k in range(3))
+    return tuple(base[k] + (top[k] - base[k]) * alpha for k in range(3))
 
 
 def render(size: int) -> bytes:
-    """Return raw RGB rows for a size x size icon: the mascot on its ground."""
-    cx = cy = size / 2
-    r = size * 0.30                 # the ball
-    halo_r = r * 1.22               # centre line of the halo ring
-    halo_w = r * 0.42               # half-width of the ring before the blur
+    """Return raw RGB rows: the mascot, large and off-centre, on black.
 
-    # The two marks, in the ball's own frame (top-right, tilted).
-    tilt = -0.32
-    mark_h = r * 0.36
-    mark_w = r * 0.14
-    marks = [(-r * 0.22, 0.0), (r * 0.22, -r * 0.06)]
-    ox, oy = cx + r * 0.30, cy - r * 0.30
+    The ball sits low-left and bleeds past the edge, the way a character
+    leans into a doorway; the eyes look up and to the right, into the light.
+    """
+    cx, cy = size * 0.46, size * 0.58
+    r = size * 0.44
+    halo_r = r * 1.14
+    halo_w = r * 0.30
+
+    tilt = -0.25
+    eye_h = r * 0.40
+    eye_w = r * 0.15
+    gap = r * 0.26
+    ox, oy = cx + r * 0.22, cy - r * 0.22
+    eyes = [(-gap / 2, 0.0), (gap / 2, -r * 0.05)]
 
     rows = bytearray()
     for y in range(size):
@@ -64,30 +67,24 @@ def render(size: int) -> bytes:
             d = math.hypot(dx, dy)
             colour = BG
 
-            # Halo: a soft ring of spectrum, strongest on its centre line.
             band = abs(d - halo_r) / halo_w
-            if band < 2.2:
-                strength = math.exp(-band * band * 1.6) * 0.75
+            if band < 2.4:
+                strength = math.exp(-band * band * 1.4) * 0.7
                 colour = _mix(colour, _spectrum_at(math.atan2(dy, dx)), strength)
 
-            # Ball, lit faintly from the top-left.
             if d <= r:
-                lit = max(0.0, 1 - math.hypot(dx + r * 0.5, dy + r * 0.6) / (r * 1.1))
-                colour = _mix(BODY, INK, 0.22 * lit)
-                # Rim light along the top edge.
-                if d > r - size * 0.004:
-                    rim = max(0.0, -dy / r)
-                    colour = _mix(colour, INK, 0.5 * rim)
-                # Marks: rotate the pixel into the marks' frame.
+                # Shade toward the bottom-right so it reads as a ball.
+                shade = max(0.0, (dx + dy) / (2 * r))
+                colour = _mix(INK, BG, 0.22 * shade * shade)
                 mx, my = px - ox, py - oy
                 ux = mx * math.cos(-tilt) - my * math.sin(-tilt)
                 uy = mx * math.sin(-tilt) + my * math.cos(-tilt)
-                for (mxc, myc) in marks:
-                    lx, ly = ux - mxc, uy - myc
-                    half = mark_h / 2 - mark_w / 2
+                for (ex, ey) in eyes:
+                    lx, ly = ux - ex, uy - ey
+                    half = eye_h / 2 - eye_w / 2
                     ly_c = max(-half, min(half, ly))
-                    if math.hypot(lx, ly - ly_c) <= mark_w / 2:
-                        colour = INK
+                    if math.hypot(lx, ly - ly_c) <= eye_w / 2:
+                        colour = BG
 
             rows += bytes(int(max(0, min(255, c))) for c in colour)
     return bytes(rows)
