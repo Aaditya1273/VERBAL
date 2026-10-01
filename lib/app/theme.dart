@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -41,8 +43,9 @@ class VerbalTokens {
   static const xl = 32.0;
   static const xxl = 48.0;
 
-  static const radius = 14.0;
-  static const radiusLarge = 22.0;
+  static const radius = 20.0;
+  static const radiusLarge = 30.0;
+  static const radiusPill = 999.0;
 
   /// Minimum touch target.
   static const tap = 48.0;
@@ -131,6 +134,102 @@ class VerbalColors extends ThemeExtension<VerbalColors> {
   }
 }
 
+/// The lit ground every screen sits on.
+///
+/// A single named backdrop is what makes a set of screens read as one product
+/// rather than a set of pages: a deep base with two soft accent blooms, so the
+/// dark never goes flat.
+class VerbalBackdrop extends StatelessWidget {
+  const VerbalBackdrop({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(c.bg, c.accent, dark ? 0.07 : 0.035)!,
+            c.bg,
+            Color.lerp(c.bg, c.signal, dark ? 0.045 : 0.02)!,
+          ],
+          stops: const [0.0, 0.55, 1.0],
+        ),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// A frosted panel. Used for anything that should feel like it is floating
+/// above the ground rather than printed on it.
+class GlassPanel extends StatelessWidget {
+  const GlassPanel({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(VerbalTokens.md),
+    this.radius = VerbalTokens.radius,
+    this.accent = false,
+    this.onTap,
+  });
+
+  final Widget child;
+  final EdgeInsets padding;
+  final double radius;
+  final bool accent;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.c;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final tint = accent ? c.accent : c.surface;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Ink(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(radius),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: accent
+                      ? [
+                          c.accent.withValues(alpha: dark ? 0.26 : 0.16),
+                          c.accent.withValues(alpha: dark ? 0.10 : 0.07),
+                        ]
+                      : [
+                          tint.withValues(alpha: dark ? 0.55 : 0.90),
+                          tint.withValues(alpha: dark ? 0.32 : 0.74),
+                        ],
+                ),
+                border: Border.all(
+                  color: accent
+                      ? c.accent.withValues(alpha: 0.42)
+                      : c.line.withValues(alpha: dark ? 0.55 : 1),
+                ),
+              ),
+              child: Padding(padding: padding, child: child),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 extension VerbalTheme on BuildContext {
   VerbalColors get c => Theme.of(this).extension<VerbalColors>()!;
   TextTheme get t => Theme.of(this).textTheme;
@@ -149,7 +248,7 @@ ThemeData buildTheme(Brightness brightness) {
   return ThemeData(
     useMaterial3: true,
     brightness: brightness,
-    scaffoldBackgroundColor: c.bg,
+    scaffoldBackgroundColor: Colors.transparent,
     colorScheme: ColorScheme.fromSeed(
       seedColor: c.accent,
       brightness: brightness,
@@ -159,7 +258,7 @@ ThemeData buildTheme(Brightness brightness) {
     extensions: [c],
     dividerColor: c.line,
     appBarTheme: AppBarTheme(
-      backgroundColor: c.bg,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: false,
@@ -206,9 +305,9 @@ ThemeData buildTheme(Brightness brightness) {
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: c.surface,
+      backgroundColor: c.surface.withValues(alpha: 0.72),
       surfaceTintColor: Colors.transparent,
-      indicatorColor: c.accent.withValues(alpha: 0.14),
+      indicatorColor: c.accent.withValues(alpha: 0.20),
       elevation: 0,
       height: 68,
       labelTextStyle: WidgetStateProperty.all(text.labelSmall),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../shared/mascot.dart';
 import 'router.dart';
 import 'theme.dart';
 
@@ -20,9 +21,11 @@ class VerbalApp extends ConsumerWidget {
       darkTheme: buildTheme(Brightness.dark),
       themeMode: ThemeMode.system,
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => onboarded.isLoading
-          ? const _Splash()
-          : child ?? const SizedBox.shrink(),
+      builder: (context, child) => VerbalBackdrop(
+        child: onboarded.isLoading
+            ? const _Splash()
+            : child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }
@@ -33,9 +36,16 @@ class _Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.c.bg,
+      backgroundColor: Colors.transparent,
       body: Center(
-        child: Text('VERBAL', style: context.t.labelMedium),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Echo(size: 96),
+            const SizedBox(height: VerbalTokens.lg),
+            Text('VERBAL', style: context.t.labelMedium),
+          ],
+        ),
       ),
     );
   }

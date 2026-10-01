@@ -86,8 +86,23 @@ Widget buildApp({ProfileRepository? profile, RecordingAnalyticsSink? sink}) {
       experimentServiceProvider
           .overrideWithValue(ExperimentService(analytics, userId: 'u')),
     ],
-    child: const VerbalApp(),
+    child: const _NoAnimations(child: VerbalApp()),
   );
+}
+
+/// Echo's idle animation never stops, so `pumpAndSettle` would hang. Disabling
+/// animations is the same path the system's reduce-motion setting takes, and
+/// the widget honours it.
+class _NoAnimations extends StatelessWidget {
+  const _NoAnimations({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(disableAnimations: true),
+        child: child,
+      );
 }
 
 /// Run the journey at a real phone size (360x780 logical, 3x) rather than the

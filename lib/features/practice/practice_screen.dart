@@ -15,6 +15,7 @@ import '../../domain/pitfall.dart';
 import '../../domain/playbook.dart';
 import '../../domain/scenario.dart';
 import '../../domain/session.dart';
+import '../../shared/mascot.dart';
 import '../../shared/widgets.dart';
 import 'practice_controller.dart';
 
@@ -259,6 +260,14 @@ class _ActorStage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Echo reads the engine, not the script: the face is the state.
+          Echo(
+            size: 132,
+            emotion: state.emotion,
+            speaking: state.phase == VoicePhase.speaking,
+            listening: state.phase == VoicePhase.listening,
+          ),
+          const SizedBox(height: VerbalTokens.md),
           Pill(
             state.emotion.label,
             icon: Icons.psychology_outlined,
@@ -273,7 +282,7 @@ class _ActorStage extends StatelessWidget {
               state.currentLine.isEmpty ? '…' : '“${state.currentLine}”',
               key: ValueKey(state.currentLine),
               textAlign: TextAlign.center,
-              style: context.t.headlineMedium?.copyWith(height: 1.35),
+              style: context.t.headlineSmall?.copyWith(height: 1.35),
             ),
           ),
         ],

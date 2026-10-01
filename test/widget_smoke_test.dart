@@ -64,6 +64,11 @@ Widget host(
     child: MaterialApp(
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),
+      // Echo's idle animation never stops, so pumpAndSettle would hang.
+      builder: (context, c) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(disableAnimations: true),
+        child: c ?? const SizedBox.shrink(),
+      ),
       home: child,
     ),
   );
@@ -84,6 +89,9 @@ void main() {
     expect(t.widget<FilledButton>(button).onPressed, isNull,
         reason: 'disabled until an interest is chosen');
 
+    // Echo now sits above the options, so the choice can start below the fold.
+    await t.ensureVisible(find.text('Managing people'));
+    await t.pumpAndSettle();
     await t.tap(find.text('Managing people'));
     await t.pump();
 
@@ -194,6 +202,10 @@ void main() {
           ],
           child: MaterialApp(
             theme: buildTheme(brightness),
+            builder: (context, c) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: c ?? const SizedBox.shrink(),
+            ),
             home: ScenariosScreen(onOpen: (_) {}),
           ),
         ),

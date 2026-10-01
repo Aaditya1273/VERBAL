@@ -50,27 +50,12 @@ class VerbalCard extends StatelessWidget {
   final bool accent;
 
   @override
-  Widget build(BuildContext context) {
-    final c = context.c;
-    final body = Padding(padding: padding, child: child);
-
-    return Material(
-      color: accent ? c.accent.withValues(alpha: 0.10) : c.surface,
-      borderRadius: BorderRadius.circular(VerbalTokens.radius),
-      child: InkWell(
+  Widget build(BuildContext context) => GlassPanel(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(VerbalTokens.radius),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(VerbalTokens.radius),
-            border: Border.all(
-                color: accent ? c.accent.withValues(alpha: 0.35) : c.line),
-          ),
-          child: body,
-        ),
-      ),
-    );
-  }
+        padding: padding,
+        accent: accent,
+        child: child,
+      );
 }
 
 /// A small piece of metadata: difficulty, duration, category.
