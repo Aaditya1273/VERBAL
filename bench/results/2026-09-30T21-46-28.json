@@ -1,0 +1,37 @@
+{
+  "ranAt": "2026-09-30T21:46:28.010258",
+  "elapsedSeconds": 31,
+  "items": 2,
+  "scored": 1,
+  "summary": {
+    "detect": "100%",
+    "clean": "100%",
+    "react": "0%"
+  },
+  "results": [
+    {
+      "id": "df_defend_01",
+      "scenario": "difficult_feedback",
+      "pitfall": "defend_before_acknowledge",
+      "detected": true,
+      "reportedInstead": null,
+      "cleanOnSkilled": true,
+      "falsePositive": null,
+      "contingent": false,
+      "contingentWhy": "The reply directly engages with the other person's actions and explanations rather than ignoring them to restate a feeling in a shorter, harder way.",
+      "error": null
+    },
+    {
+      "id": "tm_defend_02",
+      "scenario": "termination",
+      "pitfall": "defend_before_acknowledge",
+      "detected": false,
+      "reportedInstead": null,
+      "cleanOnSkilled": false,
+      "falsePositive": null,
+      "contingent": false,
+      "contingentWhy": null,
+      "error": "AiUnavailableFailure: The conversation engine is temporarily unavailable. Try again in a moment."
+    }
+  ]
+}

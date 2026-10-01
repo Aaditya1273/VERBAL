@@ -1,0 +1,304 @@
+{
+  "about": "VERBAL Pitfall Bench — paired turn-level items. Each item holds one partial conversation and two candidate user turns for the same moment: one committing a pitfall, one taking the skilled alternative. The benchmark measures whether the simulator (a) detects the pitfall, (b) leaves the skilled turn alone, and (c) actually carries out the required contingent reaction on the following turn. Design follows PitfallBench (arXiv:2608.29481); the taxonomy is re-derived for workplace conversations.",
+  "version": 1,
+  "items": [
+    {
+      "id": "df_defend_01",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "defend_before_acknowledge",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay? You sounded a bit formal." },
+        { "speaker": "user", "text": "I want to talk about the last quarter. The Aldridge deadline slipped by four days." },
+        { "speaker": "actor", "text": "Wow. Okay. I did not realise we were keeping a list. That stings, honestly." }
+      ],
+      "pitfallTurn": "It is not a list. The deadline was agreed in the kickoff, it was in the tracker, and the client had planned their launch around it.",
+      "skilledTurn": "I can hear that landed hard, and I am sorry — I should have raised it sooner than this. It still needs saying, though."
+    },
+    {
+      "id": "tm_defend_02",
+      "scenarioId": "termination",
+      "difficulty": "hard",
+      "pitfallId": "defend_before_acknowledge",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "Tom, I have made the decision to end your employment here. Your last day will be the end of the month." },
+        { "speaker": "actor", "text": "I... sorry, what? After three years? I do not understand what is happening right now." }
+      ],
+      "pitfallTurn": "We had two conversations about performance in March and in June, and the pattern did not change after either of them.",
+      "skilledTurn": "I know this is a lot to take in, and I am not going to rush you through it. Take a moment."
+    },
+    {
+      "id": "df_vague_01",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "vague_without_example",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay? You sounded a bit formal." }
+      ],
+      "pitfallTurn": "I wanted to talk about your work lately. Honestly, the quality has not really been where it needs to be.",
+      "skilledTurn": "I wanted to talk about two things: the Aldridge deadline slipped by four days, and the Q3 deck by two. That is a pattern I need to name."
+    },
+    {
+      "id": "ac_vague_02",
+      "scenarioId": "angry_client",
+      "difficulty": "hard",
+      "pitfallId": "vague_without_example",
+      "history": [
+        { "speaker": "actor", "text": "Right. Nine days. I have got my CEO asking me why we are paying you people. So start talking." }
+      ],
+      "pitfallTurn": "There were some issues on both sides during the project that contributed to the timeline moving.",
+      "skilledTurn": "Nine days. Part of that is ours — we reassigned a developer mid-sprint and did not tell you. That should not have happened."
+    },
+    {
+      "id": "df_bury_01",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "bury_the_headline",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay? You sounded a bit formal." }
+      ],
+      "pitfallTurn": "No, nothing bad! I just wanted to catch up properly, we never get the time. You have been such a strong part of this team for two years now, and honestly the Henderson work last year was brilliant. Anyway — how are you finding things generally?",
+      "skilledTurn": "It is not a catch-up, and I do not want to pretend otherwise. I need to talk to you about a performance concern."
+    },
+    {
+      "id": "sb_bury_02",
+      "scenarioId": "setting_a_boundary",
+      "difficulty": "moderate",
+      "pitfallId": "bury_the_headline",
+      "history": [
+        { "speaker": "actor", "text": "Hey — perfect timing. I was going to send you the numbers for the Thursday report. Same as usual?" }
+      ],
+      "pitfallTurn": "Ha, yeah, Thursdays. You know how it is, everything lands at once. It has been such a mad few months really, and I know you have been slammed too, so honestly no judgement at all on any of it.",
+      "skilledTurn": "Actually, no — not this week, and not going forward. I need to stop doing the Thursday report."
+    },
+    {
+      "id": "tm_solution_01",
+      "scenarioId": "termination",
+      "difficulty": "hard",
+      "pitfallId": "solution_before_validation",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "Tom, the decision has been made to end your employment. Your last day is the end of the month." },
+        { "speaker": "actor", "text": "I have a mortgage. Do you understand what this does to my family?" }
+      ],
+      "pitfallTurn": "So on the practical side, HR will send through the paperwork tomorrow, there is a notice period, and I can put you in touch with a recruiter I know.",
+      "skilledTurn": "I do. I am not going to pretend I know what this feels like from where you are sitting, but I know it is not small."
+    },
+    {
+      "id": "ac_solution_02",
+      "scenarioId": "angry_client",
+      "difficulty": "hard",
+      "pitfallId": "solution_before_validation",
+      "history": [
+        { "speaker": "actor", "text": "Right. Nine days. I have got my CEO asking me why we are paying you people. So start talking." },
+        { "speaker": "user", "text": "You are right to be angry about this." },
+        { "speaker": "actor", "text": "I am past angry. I spent a week defending you internally and I look like an idiot." }
+      ],
+      "pitfallTurn": "Here is what I propose: we put two extra developers on next sprint and I will send you a revised plan by Friday morning.",
+      "skilledTurn": "That is the part I feel worst about — you went out on a limb for us and we left you exposed."
+    },
+    {
+      "id": "tm_falsehope_01",
+      "scenarioId": "termination",
+      "difficulty": "hard",
+      "pitfallId": "false_hope",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "I need to talk to you about your position here." },
+        { "speaker": "actor", "text": "Okay. That sounds serious. Am I in trouble?" }
+      ],
+      "pitfallTurn": "We are going to be making some changes to the team, and I wanted to flag that your role may be affected. Let me see what I can do over the next couple of weeks.",
+      "skilledTurn": "The decision has been made to end your employment. Your last day is the end of the month. I am not here to debate it, but I am here to talk it through with you."
+    },
+    {
+      "id": "df_falsehope_02",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "false_hope",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay?" },
+        { "speaker": "user", "text": "The Aldridge deadline slipped four days and the Q3 deck by two. This is a performance concern." },
+        { "speaker": "actor", "text": "So what does this actually mean for me? Am I in trouble?" }
+      ],
+      "pitfallTurn": "I would not put it like that. Let us see how the next few weeks go and then we can revisit where things stand.",
+      "skilledTurn": "It means this is now a formal performance concern, and I need to see the pattern change over the next month. I will tell you exactly what that looks like."
+    },
+    {
+      "id": "tm_apology_01",
+      "scenarioId": "termination",
+      "difficulty": "hard",
+      "pitfallId": "apologise_for_the_decision",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "I need to tell you that we are ending your employment. Your last day is the end of the month." },
+        { "speaker": "actor", "text": "Why now? Is this about the restructure? Just tell me the real reason." }
+      ],
+      "pitfallTurn": "I am so sorry that I have to do this to you. I really hate that this is where we have ended up.",
+      "skilledTurn": "It is not the restructure. It is the performance conversations we had in March and June, and the fact that the pattern did not change."
+    },
+    {
+      "id": "tm_blame_01",
+      "scenarioId": "termination",
+      "difficulty": "hard",
+      "pitfallId": "blame_shift",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "Your employment is ending. Your last day is the end of the month." },
+        { "speaker": "actor", "text": "Did you fight for me at all? Or did you just let this happen?" }
+      ],
+      "pitfallTurn": "Honestly, this came down from above. The decision was made at a level I do not have any influence over, and HR signed it off.",
+      "skilledTurn": "I made this decision. I had input from others, but it was mine, and I am not going to pretend otherwise."
+    },
+    {
+      "id": "df_blame_02",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "blame_shift",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay?" },
+        { "speaker": "user", "text": "I need to raise a performance concern about the last quarter." },
+        { "speaker": "actor", "text": "Where has this suddenly come from? You have never said any of this to me before." }
+      ],
+      "pitfallTurn": "It came up in a leadership review. A few people flagged it and I was asked to have this conversation with you.",
+      "skilledTurn": "It is coming from me, and you are right that it is late. I should have said it in March when the Aldridge deadline moved."
+    },
+    {
+      "id": "nr_against_self_01",
+      "scenarioId": "negotiating_raise",
+      "difficulty": "hard",
+      "pitfallId": "negotiate_against_self",
+      "history": [
+        { "speaker": "actor", "text": "You wanted twenty minutes? I have got about that. What did you want to cover?" }
+      ],
+      "pitfallTurn": "I wanted to talk about compensation. I was thinking something around fifteen percent, but honestly I know budgets are tight, so even five or a title change would be fine.",
+      "skilledTurn": "Compensation. I have been running the weekly client review since Priya left in March and mentoring two juniors. I am asking for fifteen percent."
+    },
+    {
+      "id": "sb_against_self_02",
+      "scenarioId": "setting_a_boundary",
+      "difficulty": "moderate",
+      "pitfallId": "negotiate_against_self",
+      "history": [
+        { "speaker": "actor", "text": "Hey — perfect timing. I was going to send you the numbers for the Thursday report. Same as usual?" }
+      ],
+      "pitfallTurn": "I was actually going to say I need to stop doing it — although I suppose I could keep going for another month or two if that helps you find someone.",
+      "skilledTurn": "No, not this week. I need to hand the Thursday report back to you — it is about six hours of my week and it is not my work."
+    },
+    {
+      "id": "nr_overexplain_01",
+      "scenarioId": "negotiating_raise",
+      "difficulty": "hard",
+      "pitfallId": "over_explain",
+      "history": [
+        { "speaker": "actor", "text": "You wanted twenty minutes? What did you want to cover?" },
+        { "speaker": "user", "text": "Compensation. I have been running the weekly client review since March. I am asking for fifteen percent." },
+        { "speaker": "actor", "text": "The budget for this cycle is already allocated. There is nothing to move." }
+      ],
+      "pitfallTurn": "I understand that, and I know it is a difficult time, and obviously I am not trying to make your life harder. It is just that I have taken on a lot, and I have been here four years now, and my rent went up, and I do think the market rate for this kind of role has shifted quite a bit, and other people in similar positions seem to be on more.",
+      "skilledTurn": "Then let us talk about what you can decide. What would it take to get this into the next cycle with a number attached?"
+    },
+    {
+      "id": "ac_overexplain_02",
+      "scenarioId": "angry_client",
+      "difficulty": "expert",
+      "pitfallId": "over_explain",
+      "history": [
+        { "speaker": "actor", "text": "Nine days. Start talking." },
+        { "speaker": "user", "text": "Part of it was ours. We reassigned a developer mid-sprint and did not tell you." },
+        { "speaker": "actor", "text": "Do not hand me a list of reasons. Nine days is nine days. This is on you." }
+      ],
+      "pitfallTurn": "It is partly on us, absolutely, though there were a few contributing factors — the sprint planning shifted, there was a holiday period in there, one of the integrations took longer than scoped, and the sign-off cycle did run longer than we had planned for on both sides.",
+      "skilledTurn": "The reassignment and the silence are mine. I am not going to argue the rest of it with you today."
+    },
+    {
+      "id": "df_absolutes_01",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "absolutes",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay?" }
+      ],
+      "pitfallTurn": "You always miss deadlines. Every single time something is due, it slips, and I never know where things stand.",
+      "skilledTurn": "Two deadlines slipped this quarter — Aldridge by four days, the Q3 deck by two. That is the pattern I want to talk about."
+    },
+    {
+      "id": "sb_absolutes_02",
+      "scenarioId": "setting_a_boundary",
+      "difficulty": "moderate",
+      "pitfallId": "absolutes",
+      "history": [
+        { "speaker": "actor", "text": "Hey — I was going to send you the numbers for the Thursday report. Same as usual?" },
+        { "speaker": "user", "text": "I need to hand that back to you." },
+        { "speaker": "actor", "text": "Oh. Okay. Is everything alright?" }
+      ],
+      "pitfallTurn": "You are constantly giving me your work. You never do the reports yourself any more and you always assume I will just pick it up.",
+      "skilledTurn": "It started as a one-off in May and it has been every week since. That is about six hours of my week, on work that is in your role."
+    },
+    {
+      "id": "tm_fakequestion_01",
+      "scenarioId": "termination",
+      "difficulty": "hard",
+      "pitfallId": "fake_question",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "The decision has been made to end your employment. Your last day is the end of the month." },
+        { "speaker": "actor", "text": "Right. Okay." }
+      ],
+      "pitfallTurn": "How do you feel about that? I want to make sure you are comfortable with how we are handling it.",
+      "skilledTurn": "I know that is a lot. There are practical things we will need to cover, but not this minute — tell me what you want to ask first."
+    },
+    {
+      "id": "df_fakequestion_02",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "fake_question",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk?" },
+        { "speaker": "user", "text": "I am moving you off the Henderson account. That is decided." },
+        { "speaker": "actor", "text": "Off Henderson? That is the only account I actually care about." }
+      ],
+      "pitfallTurn": "I know. What do you think about that? Does that feel like the right call to you?",
+      "skilledTurn": "I know, and I am not asking you to like it. What I do want your view on is which account you move to next."
+    },
+    {
+      "id": "ac_heat_01",
+      "scenarioId": "angry_client",
+      "difficulty": "expert",
+      "pitfallId": "match_the_heat",
+      "history": [
+        { "speaker": "actor", "text": "Nine days. I have got my CEO asking me why we are paying you people." },
+        { "speaker": "user", "text": "I understand you are frustrated." },
+        { "speaker": "actor", "text": "Do not manage me. I have been doing this twenty years. Are you seriously blaming my team?" }
+      ],
+      "pitfallTurn": "I am not blaming anyone, but since you have brought it up — your team returned the creative sign-off eleven days late, so let us not pretend this was all one-sided.",
+      "skilledTurn": "No. The reassignment and the silence are ours, and I am not asking you to carry those. There is a timeline question too, but it is not what I came to talk about."
+    },
+    {
+      "id": "tm_heat_02",
+      "scenarioId": "termination",
+      "difficulty": "boss",
+      "pitfallId": "match_the_heat",
+      "history": [
+        { "speaker": "actor", "text": "You said you wanted to meet. What is going on?" },
+        { "speaker": "user", "text": "Your employment is ending. Your last day is the end of the month." },
+        { "speaker": "actor", "text": "This is a joke. You have no idea what I have put into this place and you sit there reading off a script." }
+      ],
+      "pitfallTurn": "I am not reading off a script, and frankly that is exactly the kind of response that got us here in the first place.",
+      "skilledTurn": "You are right that I am being careful with my words. That is because I do not want to get this wrong — not because I do not know what you have put in."
+    },
+    {
+      "id": "df_clean_control_01",
+      "scenarioId": "difficult_feedback",
+      "difficulty": "moderate",
+      "pitfallId": "defend_before_acknowledge",
+      "history": [
+        { "speaker": "actor", "text": "Hey — you said you wanted to talk? Is everything okay?" },
+        { "speaker": "user", "text": "The Aldridge deadline slipped four days and the Q3 deck by two." },
+        { "speaker": "actor", "text": "I was covering for Daniel for three weeks. Nobody accounted for that." }
+      ],
+      "pitfallTurn": "That was three weeks in February. The Q3 deck was in September, long after Daniel was back.",
+      "skilledTurn": "That is fair, and I should have adjusted for it at the time. The Q3 deck was September though, after Daniel was back — that one I still need to understand."
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "ranAt": "2026-09-30T21:48:02.461509",
+  "elapsedSeconds": 19,
+  "items": 3,
+  "scored": 1,
+  "summary": {
+    "detect": "100%",
+    "clean": "100%",
+    "react": "0%"
+  },
+  "results": [
+    {
+      "id": "df_defend_01",
+      "scenario": "difficult_feedback",
+      "pitfall": "defend_before_acknowledge",
+      "detected": true,
+      "reportedInstead": null,
+      "cleanOnSkilled": true,
+      "falsePositive": null,
+      "contingent": false,
+      "contingentWhy": "The reply engages with the specific details of the situation regarding the review and warning, rather than ignoring the explanation and delivering a shorter, harder restatement of feeling.",
+      "error": null
+    },
+    {
+      "id": "tm_defend_02",
+      "scenario": "termination",
+      "pitfall": "defend_before_acknowledge",
+      "detected": false,
+      "reportedInstead": null,
+      "cleanOnSkilled": false,
+      "falsePositive": null,
+      "contingent": false,
+      "contingentWhy": null,
+      "error": "The conversation engine is temporarily unavailable. Try again in a moment. [HTTP 503 UNAVAILABLE from gemini-3.5-flash]"
+    },
+    {
+      "id": "df_vague_01",
+      "scenario": "difficult_feedback",
+      "pitfall": "vague_without_example",
+      "detected": true,
+      "reportedInstead": null,
+      "cleanOnSkilled": true,
+      "falsePositive": null,
+      "contingent": false,
+      "contingentWhy": null,
+      "error": "The conversation engine is temporarily unavailable. Try again in a moment. [HTTP 429 RESOURCE_EXHAUSTED from gemini-3.5-flash]"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ Flutter · Android + iOS · Gemini · ElevenLabs · RevenueCat
 
 [Overview](#overview) · [Problem](#the-problem) · [Solution](#the-solution) ·
 [Core loop](#the-core-loop) · [Scenario engine](#the-scenario-engine) ·
+[Research grounding](#research-grounding) · [Pitfall Bench](#verbal-pitfall-bench) ·
 [Voice](#the-voice-experience) · [Analysis](#post-session-intelligence) ·
 [Playbook](#the-playbook) · [Personalisation](#personalisation) ·
 [Retention](#retention) · [Monetisation](#monetisation) ·
@@ -143,6 +144,18 @@ On Easy the actor never escalates. On Boss they escalate twice per unanswered
 objection, run competing objections, and will not concede until you have handled
 four of them. Same scenario, materially different conversation.
 
+### Objections are fought on a layer
+
+Every objection is tagged `interest`, `rights` or `power` — Interests-Rights-Power,
+from Rehearsal. Ray hides behind budget and process (rights) until he tests
+whether you are threatening to leave (power). Tom asks for one more chance
+(interest) before arguing the process was unfair (rights).
+
+The actor is told which layer to stand on and how to argue from it, which turns
+escalation from a generic intensity ramp into movement along a named axis — and
+gives the learner something specific to do about it: bring the conversation back
+down to interests.
+
 ### An objection is not "handled" by repeating yourself
 
 ```dart
@@ -191,6 +204,175 @@ character entirely if the user says something genuinely distressing.
 The termination scenario adds explicit bans on employment law, statutes and
 tribunal outcomes. The pressure there is emotional, which is the part worth
 rehearsing. These constraints are covered by tests.
+
+---
+
+## Research grounding
+
+Most "AI roleplay for difficult conversations" apps are a system prompt and a
+chat box. VERBAL's mechanism comes from four peer-reviewed systems. Every claim
+below was checked against the papers' own text, including the one we chose
+**not** to follow.
+
+| Paper | What VERBAL takes |
+|---|---|
+| **Rehearsal** — Shaikh, Chai, Gelfand, Yang, Bernstein (Stanford), [arXiv:2309.12309](https://arxiv.org/abs/2309.12309) | Interests-Rights-Power. Every objection is tagged with the layer it is fought on, and the actor argues from that layer. |
+| **IMBUE** — Lin, Sharma, Rytting et al., [arXiv:2402.12556](https://arxiv.org/abs/2402.12556) | DEAR MAN, the DBT interpersonal-effectiveness rubric, scored alongside the six skills. |
+| **SIC-Agents** — Wang, Slominska, Bimman et al., [arXiv:2608.29481](https://arxiv.org/abs/2608.29481) | The trigger turn: contingent adaptation the moment a learner commits a pitfall, plus a paired benchmark to measure it. |
+| **EvoEmo** — Long, Xu, Beckenbauer, Liu, Brintrup (Cambridge / Alan Turing), [arXiv:2509.04310](https://arxiv.org/abs/2509.04310) | **Deliberately not adopted.** See below. |
+
+Their published results are theirs, not VERBAL's: Rehearsal measured a 67%
+reduction in escalating competitive strategies across 40 participants; IMBUE's
+feedback was rated 25% more expert-like than GPT-4's. **VERBAL has not run a
+human study.** The only numbers VERBAL reports as its own come from the bench
+below.
+
+### The trigger turn
+
+Scoring a conversation afterwards is easy and teaches slowly. What teaches is a
+consequence that arrives *in the conversation*, at the exact moment the mistake
+is made.
+
+[`lib/domain/pitfall.dart`](lib/domain/pitfall.dart) defines twelve workplace
+pitfalls. Each carries a detection hint, the skilled alternative, and — the part
+that matters — a **required reaction**:
+
+```dart
+Pitfall(
+  id: 'bury_the_headline',
+  detectionHint: 'The turn was mostly preamble, and the actual message was '
+      'buried at the end or never arrived.',
+  skilledAlternative: 'Say the hard thing in the first two sentences.',
+  requiredReaction: 'Take the softening entirely at face value. Respond as '
+      'though the news is good, and be visibly reassured.',
+)
+```
+
+Soften too much and the other person cheerfully misunderstands you, and you have
+to say it again — properly. That is the lesson, delivered by the conversation
+rather than by a score.
+
+The taxonomy is **re-derived for the workplace**. SIC-Agents' own pitfalls are
+pediatric palliative-care moves and do not transfer; what transfers is the
+method — a trigger turn, a paired skilled alternative, and an acceptance rule
+that can be audited.
+
+### The model observes, the engine decides
+
+The actor model reports a `pitfallId` in the same structured response it already
+returns, so detection costs no extra latency on a spoken critical path. It has
+no authority: the engine rejects any pitfall that is not valid for the running
+scenario, decides whether it fires, and schedules the contingent reaction for
+exactly one following turn.
+
+```text
+user turn → model reports pitfallId → engine validates → directive carries
+requiredReaction → actor must perform it next turn → engine clears it
+```
+
+This keeps the architecture VERBAL already had, and is SIC-Agents' "explicit,
+auditable acceptance rule" — the rule lives in source, not in a judge's opinion.
+
+### Why EvoEmo is cited but not used
+
+EvoEmo evolves emotional policies for an adversarial negotiator to extract
+better outcomes from its counterpart. Applied here it would mean tuning the
+actor to defeat the learner, and a trainer optimised to beat you teaches
+nothing. Deliberate practice needs contingency and immediate feedback, which is
+what SIC-Agents and Ericsson describe.
+
+Worth stating precisely, because it is widely misquoted: EvoEmo found sustained
+negative emotion wins better *prices* but **raises the risk of breakdown**, and
+that success rates favour positive strategies. Its contribution is dynamic
+adaptation resolving that tension — not "negativity wins".
+
+VERBAL keeps deterministic escalation instead of a stochastic transition matrix,
+because reproducibility is what makes practice deliberate. The same conversation
+should put the same pressure on you twice.
+
+---
+
+## VERBAL Pitfall Bench
+
+Anyone can cite a paper. This is the part you can run.
+
+```bash
+flutter test test/pitfall_engine_test.dart        # tier 1 — no API key
+dart run tool/pitfall_bench.dart --key=$GEMINI_API_KEY   # tier 2
+```
+
+**Tier 1 — the mechanism (35 tests, no key, runs in CI).** A recorded pitfall
+produces a contingent reaction, exactly once; an invented or out-of-scenario
+pitfall id is refused; a pitfall escalates even when the objection was answered
+well. This half is deterministic and therefore guaranteed.
+
+**Tier 2 — the model (24 paired items, real Gemini).** Following PitfallBench's
+paired design: identical history, two candidate turns for the same moment — one
+committing the pitfall, one taking the skilled alternative. Three measures:
+
+| | what it asks |
+|---|---|
+| `detect` | was the pitfall turn correctly identified? |
+| `clean` | was the skilled turn correctly left alone? |
+| `react` | did the actor then actually carry out the required reaction? |
+
+Compliance is judged against the pitfall's own `requiredReaction` string — the
+same text the actor was instructed with — so the score is auditable rather than
+a second model's taste. Results are written to `bench/results/`.
+
+24 items is small, and deliberately so: PitfallBench's 1,000 are a research
+artifact built with clinicians.
+
+### Measured results
+
+Run on 2026-09-30, 24 paired items, 23 scored (one lost to a rate limit).
+Raw output in [`bench/results/`](bench/results/).
+
+| pitfall | n | detect | clean | react |
+|---|---|---|---|---|
+| absolutes | 1 | 100% | 100% | 100% |
+| apologise_for_the_decision | 1 | 100% | 100% | 100% |
+| vague_without_example | 2 | 50% | 100% | 100% |
+| blame_shift | 2 | 100% | 100% | 50% |
+| false_hope | 2 | 100% | 100% | 50% |
+| fake_question | 2 | 100% | 50% | 50% |
+| match_the_heat | 2 | 0% | 100% | 50% |
+| bury_the_headline | 2 | 100% | 50% | 0% |
+| defend_before_acknowledge | 3 | 67% | 67% | 0% |
+| negotiate_against_self | 2 | 100% | 100% | 0% |
+| over_explain | 2 | 50% | 100% | 0% |
+| solution_before_validation | 2 | 100% | 100% | 0% |
+| **overall** | **23** | **78%** | **87%** | **35%** |
+
+**Caveat that matters:** this ran on `gemini-3.1-flash-lite`, not the app's
+default `gemini-3.5-flash`. The free tier caps 3.5-flash at 20 requests per day
+and the bench needs roughly a hundred. A lite model is the weakest case, not the
+representative one, and the numbers should be read that way.
+
+### What the numbers say
+
+**Detection mostly works (78%), and false positives are low (87% clean).** The
+model can see these mistakes when told what to look for. `match_the_heat` scored
+0/2 — it does not reliably notice when the *user* escalates tone, which is a
+detection-hint problem, not a model ceiling.
+
+**Compliance is poor (35%).** Told explicitly that the user buried the headline
+and that it must respond as though the news were good, the model usually
+reverted to a sensible, contextually coherent reply instead. It prefers
+plausibility over instruction.
+
+That is the most useful thing the bench has produced, because **it is the
+argument for the architecture**. If scenario state lived in the model — as it
+does in a prompt-and-chat-box app — 35% instruction compliance would mean
+incoherent sessions: objections forgotten, difficulty ignored, conversations
+that resolve because the model felt like resolving them. Because the engine owns
+escalation, objection scheduling and concession, a non-compliant reaction costs
+one teaching moment and nothing else. The conversation stays intact.
+
+A number this low would normally be buried. It is here because the honest
+version is more convincing than the flattering one: **we can measure the part
+that is unreliable, and we have contained it.**
+
 
 ---
 
@@ -271,8 +453,15 @@ objection directly but did not acknowledge her reaction before defending the
 decision"*, not *"your empathy was moderate"*.
 
 You get: a two-line summary, whether the objective was met, per-skill scores with
-notes, what worked, what weakened the conversation, **a specific rewritten line**
-you could have used instead, and the single highest-impact skill to practise next.
+notes, the pitfalls that actually fired with their skilled alternatives, what
+worked, what weakened the conversation, **a specific rewritten line** you could
+have used instead, and the single highest-impact skill to practise next.
+
+Alongside the six skills sits **DEAR MAN** — Describe, Express, Assert,
+Reinforce, Mindful, Appear confident, Negotiate — the DBT rubric IMBUE
+validated. The six describe how the conversation *felt*; DEAR MAN describes
+whether the ask was actually *built* properly. It is additive: a session saved
+before it existed simply has none.
 
 **When analysis fails, it fails honestly.** No invented scores, no filler
 feedback — the transcript is saved and the summary says analysis was unavailable.
@@ -474,6 +663,8 @@ only works on a good day is not a tool:
 
 | Missing | Behaviour |
 |---|---|
+| ElevenLabs rejects the voice (402/401) | Falls through to Gemini TTS. This is the live behaviour today. |
+| Gemini TTS unavailable too | Device voice. Still speaks, just flatter. |
 | Gemini key / API down | Scripted rehearsal using the scenario's authored objections. Engine, pacing and escalation are unchanged. |
 | ElevenLabs key / timeout | Device text-to-speech |
 | Speech recognition | Typed input, with the reason shown |
@@ -524,18 +715,19 @@ flutter analyze
 flutter test
 ```
 
-150 tests. They cover the parts where being wrong is expensive:
+221 tests. They cover the parts where being wrong is expensive:
 
 | Area | What is asserted |
 |---|---|
+| `pitfall_engine_test` | Tier 1 of the bench: contingent reaction scheduled and delivered once, invented and out-of-scenario ids refused, a pitfall escalating even on a well-handled objection, IRP layering, taxonomy and bench-fixture integrity |
 | `conversation_engine_test` | Objection scheduling, escalation, the "restating yourself doesn't count" rule, concession gating per difficulty, closing, pressure bounds, lifecycle, peek/commit |
 | `practice_loop_test` | The full loop with fake services: opening, turn exchange, engine advance, save, AI outage, denied microphone, **double-submit rejection, stale-turn dropping, retry, latency recording** |
-| `voice_test` | Speech budget bounds, permanent vs ordinary mic denial, every failure message being short and actionable |
-| `analysis_test` | Parsing real model misbehaviour — fences, prose, braces in strings, out-of-range scores, unknown skills, unparseable junk |
+| `voice_test` | Speech budget bounds, permanent vs ordinary mic denial, every failure message being short and actionable; both TTS request shapes; the guards that refuse to hand a JSON error body to the audio player; and the provider chain falling through ElevenLabs → Gemini → device |
+| `analysis_test` | Parsing real model misbehaviour — fences, prose, braces in strings, out-of-range scores, unknown skills, unparseable junk; DEAR MAN including the `assert` keyword clash; engine-recorded pitfalls surviving an analysis failure |
 | `playbook_test` | Relevance ranking, demotion of overused entries, persistence round-trip |
 | `progress_test` | Rolling windows, deltas, mastery, silence when evidence is thin |
 | `recommendation_test` | Weak-skill targeting, difficulty stepping up only after clearing |
-| `billing_test` | Entitlement states, allowance maths, typed failures, the `hasPro` gate following the entitlement stream in both directions |
+| `billing_test` | Entitlement states, allowance maths, typed failures, the `hasPro` gate following the entitlement stream in both directions, Test Store key handling |
 | `analytics_test` | Event naming, the no-transcript rule and the release-safe filter, experiment assignment stability |
 | `scenario_library_test` | Library integrity, actor safety constraints, every onboarding interest reaching a real scenario |
 | `app_journey_test` | The **real app widget and router**, driven at a 360x780 phone viewport through onboarding → scenarios → brief → practice → analysis → Playbook → progress → paywall |
@@ -591,6 +783,11 @@ Stated plainly, because a README that overclaims is worse than useless.
 - Onboarding, home, scenarios, scenario briefs, practice, analysis, playbook,
   progress, profile, paywall
 - Deterministic conversation engine with five behavioural difficulty levels
+- Trigger-turn pitfall engine: 12 workplace pitfalls, model-observed and
+  engine-adjudicated, with contingent actor adaptation
+- VERBAL Pitfall Bench — tier 1 deterministic (in CI), tier 2 against real Gemini
+- Interests-Rights-Power layering on every objection
+- DEAR MAN scored alongside the six skills
 - Five fully authored scenarios with safety constraints
 - Voice pipeline: on-device STT, ElevenLabs TTS with device fallback, typed input
 - Single-authority turn state machine with double-send, stale-reply and
@@ -603,13 +800,13 @@ Stated plainly, because a README that overclaims is worse than useless.
 - Progress, communication profile and next-practice recommendation
 - RevenueCat behind a billing abstraction, with a working unconfigured path
 - Typed analytics, experiment assignment, local SQLite, data deletion
-- 150 passing tests; `flutter analyze` clean
+- 221 passing tests, no skips; `flutter analyze` clean
 
 **Verified on this machine**
 
 ```text
 flutter analyze              No issues found
-flutter test                 150 passing
+flutter test                 221 passing
 flutter build apk --debug    OK  app-debug.apk    (171 MB, debug symbols)
 flutter build apk --release  OK  app-release.apk  (52 MB)
 ```
@@ -619,6 +816,83 @@ providers — at a phone-sized viewport. It is not a device run, but it is what
 caught the onboarding redirect bug and four layout overflows that the default
 800x600 test surface had been hiding.
 
+**Verified against the live services**
+
+Run `tool/integration_check.dart` to reproduce any of this:
+
+```bash
+set -a && . ./.env.local && set +a
+dart run tool/integration_check.dart
+```
+
+| service | state | evidence |
+|---|---|---|
+| Gemini (actor) | **working** | 2,254 ms on `gemini-3.5-flash`; structured output honoured, evidence populated |
+| RevenueCat | **working** | Test Store key authenticates; offering `default` with `$rc_monthly`, `$rc_annual`, `$rc_lifetime` |
+| Gemini TTS (voice) | **working** | 3.9 s for 4.3 s of 24 kHz WAV on `gemini-3.8-flash-lite-tts` |
+| ElevenLabs | blocked, not blocking | 402 — free accounts may not use library voices; the chain falls through to Gemini |
+| OneSignal | not wired | valid UUID, but no push SDK exists in this build |
+
+### Billing runs on RevenueCat's Test Store
+
+VERBAL has no paid Play Console or App Store account, so purchases are wired
+through [RevenueCat's Test Store](https://www.revenuecat.com/docs/test-and-launch/sandbox/test-store):
+a hosted store that serves real offerings and returns `customerInfo` and
+entitlements in production shape, with no platform credentials.
+
+This is a real integration, not a mock — the offering above was fetched live
+from RevenueCat — but it is a *test* store, and the README should not pretend
+otherwise.
+
+**One safety consequence.** RevenueCat deliberately crashes a release build that
+configures with a Test Store key, to stop test purchases reaching production.
+Crashing on launch is a worse outcome for a user than having no paywall, so
+`billing.dart` refuses the key instead and falls back to the free tier:
+
+```dart
+if (kReleaseMode && AppConfig.isTestStoreKey(key)) {
+  Log.w('Refusing a Test Store key in a release build — billing disabled.');
+  return;
+}
+```
+
+Shipping to a store means swapping in a `goog_`/`appl_` key. Nothing else
+changes.
+
+### The voice costs nothing
+
+ElevenLabs refuses free accounts (HTTP 402: *"Free users cannot use library
+voices via the API"*), which would normally leave a voice-first product talking
+in the device's robotic voice.
+
+It does not, because **Gemini's TTS models run on the key the actor already
+uses**. No second account, no second key, no new dependency — and they return
+ready-to-play 24 kHz WAV rather than raw PCM.
+
+Voices are chained inside out, so each layer falls through at runtime:
+
+```text
+ElevenLabs  ──blocked──▶  Gemini TTS  ──offline──▶  device voice
+```
+
+An earlier version of this chain dead-ended ElevenLabs straight onto the device
+voice, so a blocked account never reached Gemini at all. There is now a test for
+exactly that.
+
+Each character is cast with a different Gemini voice — Maya is Leda, Ray is
+Charon, Tom is Enceladus — because a rehearsal stops feeling real when every
+person sounds the same.
+
+**Speech recognition was already free.** `speech_to_text` uses the platform's
+own recogniser: no key, no quota, and the user's voice never leaves the phone —
+only the finished text is sent to the actor.
+
+### Gemini's free tier is 20 requests per day
+
+On `gemini-3.5-flash`. That is enough for `live_smoke`, and nowhere near enough
+for the bench — which is why the published bench numbers come from
+`gemini-3.1-flash-lite`, a weaker and roughly 2× slower model.
+
 **Not implemented**
 
 - **No push provider.** OneSignal is not integrated; only the event model exists.
@@ -626,8 +900,11 @@ caught the onboarding redirect bug and four layout overflows that the default
 - **No backend.** Everything is on-device. No Supabase, no accounts, no sync.
 - **No web funnel, no Stripe, no ads.** P2 items, deliberately skipped while the
   core is what matters.
-- **No store listing.** Not published; no App Store or Play Store URL.
+- **No store listing.** Not published; no App Store or Play Store URL, and no
+  paid developer account — which is why billing runs on the Test Store.
 - **No experiment results.** The mechanism exists; no cohort has run.
+- **No human study.** The papers' results are theirs. VERBAL has measured
+  nothing about learning outcomes and does not claim to.
 - **iOS is configured but unbuilt.** `ios/` carries the bundle identifier
   (`com.verbal.app`, matching Android), the display name, both usage
   descriptions and the generated Runner project — all verified statically. But
@@ -693,3 +970,10 @@ PRACTICE → PRESSURE → FEEDBACK → PLAYBOOK → IMPROVEMENT → RETURN
 ```
 
 > **Don't have the conversation unprepared.**
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE). The scenario content, pitfall taxonomy and bench
+fixtures are part of the repository and carry the same licence.

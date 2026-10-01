@@ -1,0 +1,42 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'router.dart';
+import 'theme.dart';
+
+class VerbalApp extends ConsumerWidget {
+  const VerbalApp({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Resolve onboarding state before the first redirect runs, otherwise the
+    // router would briefly show Home to a first-time user.
+    final onboarded = ref.watch(onboardedProvider);
+
+    return MaterialApp.router(
+      title: 'VERBAL',
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
+      themeMode: ThemeMode.system,
+      routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => onboarded.isLoading
+          ? const _Splash()
+          : child ?? const SizedBox.shrink(),
+    );
+  }
+}
+
+class _Splash extends StatelessWidget {
+  const _Splash();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.c.bg,
+      body: Center(
+        child: Text('VERBAL', style: context.t.labelMedium),
+      ),
+    );
+  }
+}
