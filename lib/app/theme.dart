@@ -139,7 +139,7 @@ class VerbalColors extends ThemeExtension<VerbalColors> {
 /// The lit ground every screen sits on.
 ///
 /// Not a flat gradient: a light source. Teal pours in from the top and falls
-/// off into the base, a warm bloom sits low where the signal colour lives, and
+/// off into the base, a quieter lamp of the same hue sits low, and
 /// a pool of shade on the left gives the headline darker ground to sit on.
 /// Film grain keeps the large gradients from banding and gives the glass
 /// something to catch. One ground, every screen — that is what makes a set of
@@ -257,8 +257,9 @@ class _LitGround extends CustomPainter {
         Color.lerp(accent, Colors.white, 0.45)!.withValues(alpha: 0.55));
     // Shade pooling from the left, so the headline sits on darker ground.
     bloom(Offset(w * 0.0, h * 0.46), w * 0.95, bg.withValues(alpha: 0.6));
-    // Warmth low down: the signal colour, where the microphone lives.
-    bloom(Offset(w * 0.5, h * 1.12), w * 0.95, signal.withValues(alpha: 0.28));
+    // A second, quieter lamp low down so the bottom of a long page never goes
+    // flat black. Same hue as the top: one light, one product.
+    bloom(Offset(w * 0.5, h * 1.12), w * 0.95, accent.withValues(alpha: 0.22));
 
     final g = grain;
     if (g != null) {

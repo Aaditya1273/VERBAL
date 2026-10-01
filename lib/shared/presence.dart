@@ -107,64 +107,120 @@ class _OrbPainter extends CustomPainter {
   final Color signal;
   final Color bg;
 
+  /// The light inside: four coloured plumes that drift around the centre.
+  /// Cool when calm, bleeding to warm as the pressure climbs.
+  List<Color> get _plumes => [
+        Color.lerp(const Color(0xFF2EE6C5), const Color(0xFFFF7A1A), heat)!,
+        Color.lerp(const Color(0xFF38BDF8), const Color(0xFFFF3D3D), heat)!,
+        Color.lerp(const Color(0xFF8BF0D8), const Color(0xFFFFB020), heat)!,
+        Color.lerp(accent, signal, heat)!,
+      ];
+
   @override
   void paint(Canvas canvas, Size size) {
     final centre = size.center(Offset.zero);
-    final r = size.width * 0.28;
     final tone = Color.lerp(accent, signal, heat)!;
 
     // Speaking swells quickly; listening breathes slowly; idle barely moves.
     final wave = math.sin(t * math.pi * 2);
     final swell = speaking
-        ? 0.10 * (math.sin(t * math.pi * 6) + 1) / 2
+        ? 0.07 * (math.sin(t * math.pi * 6) + 1) / 2
         : listening
-            ? 0.05 * (wave + 1) / 2
-            : 0.02 * (wave + 1) / 2;
+            ? 0.04 * (wave + 1) / 2
+            : 0.015 * (wave + 1) / 2;
+    final r = size.width * 0.30 * (1 + swell);
+    final sphere = Rect.fromCircle(center: centre, radius: r);
 
-    // Halo: a wide soft glow, hotter and wider under pressure.
+    // 1. Halo: wide, soft, hotter under pressure.
     canvas.drawCircle(
       centre,
-      r * (1.55 + swell * 2 + heat * 0.25),
+      r * (1.45 + heat * 0.25),
       Paint()
-        ..color = tone.withValues(alpha: 0.22 + heat * 0.12)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.55),
+        ..color = tone.withValues(alpha: 0.26 + heat * 0.14)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.5),
     );
 
-    // Core: lit from the top-left, like everything else on the ground.
-    final core = Rect.fromCircle(center: centre, radius: r * (1 + swell));
+    // 2. The glass body: dark, so the plumes read as light inside it.
     canvas.drawCircle(
       centre,
-      core.width / 2,
+      r,
+      Paint()..color = Color.lerp(bg, tone, 0.18)!,
+    );
+
+    // 3. Plumes, additive, clipped to the sphere. The whole point of the orb
+    //    is that the light moves; a still sphere is a bead.
+    canvas.save();
+    canvas.clipPath(Path()..addOval(sphere));
+    canvas.saveLayer(sphere, Paint());
+    final speed = speaking ? 3.0 : listening ? 1.4 : 1.0;
+    final plumes = _plumes;
+    for (var i = 0; i < plumes.length; i++) {
+      final phase = t * math.pi * 2 * speed + i * (math.pi * 2 / plumes.length);
+      final orbit = r * (0.38 + 0.12 * math.sin(phase * 0.7 + i));
+      final at = centre +
+          Offset(math.cos(phase) * orbit, math.sin(phase * 1.3) * orbit);
+      final blobR = r * (0.62 + 0.14 * math.sin(phase * 1.1 + i * 2));
+      canvas.drawCircle(
+        at,
+        blobR,
+        Paint()
+          ..blendMode = BlendMode.plus
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blobR * 0.55)
+          ..shader = RadialGradient(
+            colors: [
+              plumes[i].withValues(alpha: 0.85),
+              plumes[i].withValues(alpha: 0),
+            ],
+          ).createShader(Rect.fromCircle(center: at, radius: blobR)),
+      );
+    }
+    canvas.restore();
+
+    // 4. Fresnel: the edge of a sphere is darker and denser than its centre.
+    canvas.drawCircle(
+      centre,
+      r,
       Paint()
         ..shader = RadialGradient(
-          center: const Alignment(-0.45, -0.55),
-          radius: 0.95,
           colors: [
-            Color.lerp(tone, Colors.white, 0.72)!,
-            Color.lerp(tone, Colors.white, 0.18)!,
-            tone,
-            Color.lerp(tone, bg, 0.45)!,
+            Colors.transparent,
+            Colors.transparent,
+            bg.withValues(alpha: 0.55),
           ],
-          stops: const [0.0, 0.28, 0.72, 1.0],
-        ).createShader(core),
+          stops: const [0.0, 0.72, 1.0],
+        ).createShader(sphere),
     );
 
-    // Ring: a hairline that catches the light on the top edge.
+    // 5. Specular: one soft highlight, top-left, where the light is.
+    final hl = Rect.fromCenter(
+      center: centre + Offset(-r * 0.36, -r * 0.46),
+      width: r * 0.78,
+      height: r * 0.44,
+    );
+    canvas.drawOval(
+      hl,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.42)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.14),
+    );
+    canvas.restore();
+
+    // 6. Rim: a hairline that catches the light on the top edge.
     canvas.drawCircle(
       centre,
-      core.width / 2,
+      r,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
+        ..strokeWidth = 1.2
         ..shader = SweepGradient(
           startAngle: math.pi,
           endAngle: math.pi * 3,
           colors: [
-            Colors.white.withValues(alpha: 0.65),
-            Colors.white.withValues(alpha: 0.05),
-            Colors.white.withValues(alpha: 0.65),
+            Colors.white.withValues(alpha: 0.75),
+            Colors.white.withValues(alpha: 0.06),
+            Colors.white.withValues(alpha: 0.75),
           ],
-        ).createShader(core),
+        ).createShader(sphere),
     );
   }
 
