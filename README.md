@@ -6,7 +6,7 @@
 
 ---
 
-## 👋 Meet the cloud
+## Meet the cloud
 
 <img src="assets/mascot/neutre.png" align="right" width="120">
 
@@ -17,14 +17,14 @@ cloud is the only thing on screen with a face. You always know where to look.
 
 <br clear="right">
 
-## 😬 The problem
+## The problem
 
 <img src="docs/art/problem.svg" width="100%">
 
 The conversations that shape a career — the raise, the hard feedback, the
 "we're letting you go" — happen **once**, live, with no rehearsal.
 
-## 💊 The painkiller
+## The painkiller
 
 **Practise it out loud, against someone who pushes back, then see exactly what
 worked.**
@@ -33,13 +33,13 @@ worked.**
 
 | | |
 |---|---|
-| 🎙️ **Voice, not chat** | You hold and speak. It answers in a real voice. |
-| 🧱 **Pushes back on schedule** | A deterministic engine decides *when* objections land. |
-| 🎯 **Catches the mistake** | Bury the headline or apologise for the decision, and it reacts. |
-| 📊 **Scores with evidence** | Six skills plus DEAR MAN, each tied to your own words. |
-| 📒 **Keeps what worked** | Your best lines go into a Playbook for next time. |
+| **Voice, not chat** | You hold and speak. It answers in a real voice. |
+| **Pushes back on schedule** | A deterministic engine decides *when* objections land. |
+| **Catches the mistake** | Bury the headline or apologise for the decision, and it reacts. |
+| **Scores with evidence** | Six skills plus DEAR MAN, each tied to your own words. |
+| **Keeps what worked** | Your best lines go into a Playbook for next time. |
 
-## ✨ What makes it different
+## What makes it different
 
 | Everyone else | VERBAL |
 |---|---|
@@ -54,15 +54,15 @@ worked.**
 The model is good at *noticing* a mistake and bad at *acting* on it unaided.
 So VERBAL lets it notice and makes the engine act. That split is the product.
 
-## 🔁 One turn, end to end
+## One turn, end to end
 
 <img src="docs/art/turn.svg" width="100%">
 
-## 🏗️ Architecture
+## Architecture
 
 <img src="docs/art/architecture.svg" width="100%">
 
-## 📱 The app
+## The app
 
 <p align="center">
   <img src="docs/screens/home.jpg" width="24%">
@@ -82,23 +82,23 @@ So VERBAL lets it notice and makes the engine act. That split is the product.
   <sub><b>Progress</b> — six skills over time &nbsp;·&nbsp; <b>Settings</b> — your data stays here &nbsp;·&nbsp; <b>Pro</b> — live RevenueCat offerings</sub>
 </p>
 
-## 🎭 Five conversations
+## Five conversations
 
-| | Scenario | Who | Stresses |
-|---|---|---|---|
-| 🗣️ | Giving Difficult Feedback | Maya | clarity · empathy · specificity |
-| 💰 | Negotiating a Raise | Ray | assertiveness · composure |
-| 🛑 | Setting a Boundary | Jon | assertiveness · clarity |
-| 😠 | Handling an Angry Client · **Pro** | Delia | composure · listening |
-| 📄 | Termination Conversation · **Pro** | Tom | clarity · empathy |
+| Scenario | Who | Stresses |
+|---|---|---|
+| Giving Difficult Feedback | Maya | clarity · empathy · specificity |
+| Negotiating a Raise | Ray | assertiveness · composure |
+| Setting a Boundary | Jon | assertiveness · clarity |
+| Handling an Angry Client · **Pro** | Delia | composure · listening |
+| Termination Conversation · **Pro** | Tom | clarity · empathy |
 
-## 💳 Monetisation
+## Monetisation
 
 Free: 3 sessions a week. **Pro** (monthly · annual · lifetime) unlocks unlimited
 practice, the two hardest scenarios, full analysis and an unlimited Playbook —
 powered by **RevenueCat**, offerings fetched live.
 
-## 🚀 Run it
+## Run it
 
 ```bash
 cp .env.example .env.local        # add GEMINI_API_KEY (+ RevenueCat test key)
@@ -112,7 +112,7 @@ No key? It still runs: scripted lines, device voice, honest fallbacks.
 
 ---
 
-# 🔬 Deep dive
+# Deep dive
 
 Everything below is the full engineering write-up: the engine, the research,
 the bench, the voice loop, and an honest list of what is and isn't built.
@@ -155,7 +155,7 @@ into incoherence.
 
 Each level is a profile of real parameters, not a prompt adjective:
 
-| | Easy | Moderate | Hard | Expert | Boss |
+| Easy | Moderate | Hard | Expert | Boss |
 |---|---|---|---|---|---|
 | Objections used | 1 | 2 | 3 | 4 | 5 |
 | New objection every | 3 turns | 2 turns | 2 turns | 1 turn | 1 turn |
@@ -943,7 +943,7 @@ for the bench — which is why the published bench numbers come from
 
 ## Roadmap
 
-**01 — Core loop** ✅ scenarios, voice practice, analysis, Playbook, persistence
+**01 — Core loop** scenarios, voice practice, analysis, Playbook, persistence
 
 **02 — Intelligence** — richer signal extraction per turn, interruption handling,
 more scenarios in the same authored depth

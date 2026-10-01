@@ -69,14 +69,14 @@ def hero():
 
 def problem():
     b = label(60, 70, "THE PROBLEM")
-    items = [("😶", "No rehearsal", "You get one shot,", "with real stakes."),
-             ("📄", "Advice is text", "Reading a script is", "not saying it out loud."),
-             ("🤖", "Chatbots agree", "They fold the moment", "you push. People don't.")]
+    items = [("01", "No rehearsal", "You get one shot,", "with real stakes."),
+             ("02", "Advice is text", "Reading a script is", "not saying it out loud."),
+             ("03", "Chatbots agree", "They fold the moment", "you push. People don't.")]
     for i, (e, t, l1, l2) in enumerate(items):
         x = 60 + i * 370
         b += f'<rect x="{x}" y="100" width="340" height="230" rx="24" fill="url(#card)" stroke="{LINE}"/>'
         b += f'<rect x="{x+28}" y="100" width="284" height="1" fill="url(#hair)"/>'
-        b += f'<text x="{x+36}" y="170" font-size="44">{e}</text>'
+        b += f'<text x="{x+36}" y="170" fill="{MUTED}" font-size="40" font-weight="300">{e}</text>'
         b += f'<text x="{x+36}" y="230" fill="{INK}" font-size="26" font-weight="600">{t}</text>'
         b += f'<text x="{x+36}" y="268" fill="{MUTED}" font-size="18">{l1}</text>'
         b += f'<text x="{x+36}" y="294" fill="{MUTED}" font-size="18">{l2}</text>'
