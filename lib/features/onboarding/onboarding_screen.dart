@@ -16,15 +16,18 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
   final VoidCallback onDone;
 
-  @override
-  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
-}
-
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  static const _interests = [
+  /// The interests offered on screen. Public so the test asserts against the
+  /// real list — an earlier test checked a hand-copied duplicate and passed
+  /// while the UI was missing an option.
+  static const interests = [
     (key: 'managing', label: 'Managing people', icon: Icons.groups_outlined),
     (key: 'negotiating', label: 'Negotiating', icon: Icons.balance_outlined),
     (key: 'conflict', label: 'Handling conflict', icon: Icons.bolt_outlined),
+    (
+      key: 'boundaries',
+      label: 'Setting boundaries',
+      icon: Icons.shield_outlined
+    ),
     (
       key: 'feedback',
       label: 'Giving feedback',
@@ -32,6 +35,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ),
   ];
 
+  @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   String? _selected;
   bool _saving = false;
 
@@ -91,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   const SizedBox(height: VerbalTokens.xxl),
                   const SectionLabel('What do you want to get better at?'),
-                  for (final i in _interests) ...[
+                  for (final i in OnboardingScreen.interests) ...[
                     _Choice(
                       label: i.label,
                       icon: i.icon,

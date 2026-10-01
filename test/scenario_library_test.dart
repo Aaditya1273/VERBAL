@@ -3,6 +3,7 @@ import 'package:verbal/domain/actor_prompt.dart';
 import 'package:verbal/domain/conversation_engine.dart';
 import 'package:verbal/domain/difficulty.dart';
 import 'package:verbal/domain/scenario_library.dart';
+import 'package:verbal/features/onboarding/onboarding_screen.dart';
 
 void main() {
   group('library integrity', () {
@@ -86,21 +87,16 @@ void main() {
 
   group('interest routing', () {
     test('every onboarding interest reaches a matching scenario', () {
-      // These are the keys the onboarding screen writes.
-      const offered = [
-        'feedback',
-        'conflict',
-        'negotiating',
-        'boundaries',
-        'managing',
-      ];
-
-      for (final key in offered) {
+      // Reads the list the UI actually renders. The previous version of this
+      // test hand-copied the keys, so it passed while the screen was silently
+      // missing an option.
+      for (final offered in OnboardingScreen.interests) {
         final matches = ScenarioLibrary.all
-            .where((s) => s.skillTags.contains(key))
+            .where((s) => s.skillTags.contains(offered.key))
             .toList();
         expect(matches, isNotEmpty,
-            reason: 'onboarding offers "$key" with nothing behind it');
+            reason: 'onboarding offers "${offered.label}" '
+                '(${offered.key}) with no scenario behind it');
       }
     });
 

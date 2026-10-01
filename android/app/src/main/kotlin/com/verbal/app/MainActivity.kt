@@ -1,4 +1,4 @@
-package com.verbal.verbal
+package com.verbal.app
 
 import io.flutter.embedding.android.FlutterActivity
 
