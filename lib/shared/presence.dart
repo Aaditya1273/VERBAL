@@ -1,75 +1,61 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../app/theme.dart';
 import '../domain/scenario.dart';
 import '../domain/session.dart';
 
-/// What the face is doing. The eyes are the whole vocabulary.
-///
-/// [neutral] is the resting face: eyes up and to the right, like a highlight
-/// on a ball. Every other expression brings the eyes to the centre.
+/// What the face is doing.
 enum Expression {
+  /// At rest: eyes up and to the right.
   neutral,
-  attentive,
-  happy,
-  laughing,
-  angry,
-  sad,
-  scared,
-  suspicious,
-  confused,
-  curious,
-  proud,
-  shy,
-  unimpressed,
-  sleepy;
 
-  /// The face the engine's state deserves.
-  ///
-  /// While the user speaks the other person is attentive, whatever the
-  /// mood. While it thinks it looks curious. Once it answers, the face is
-  /// the mood — and it holds it.
+  /// The user is speaking: eyes to the centre, listening. Animated.
+  attentive,
+
+  /// Taken aback — the face while it thinks, and under pressure.
+  surprised,
+
+  /// Answering, happily.
+  excited;
+
+  /// The face the engine's state deserves. While the user speaks the other
+  /// person is attentive, whatever the mood; while it thinks it is surprised;
+  /// once it answers, the mood decides.
   static Expression of({required Emotion emotion, VoicePhase? phase}) {
     switch (phase) {
       case VoicePhase.listening:
         return Expression.attentive;
       case VoicePhase.processing:
-        return Expression.curious;
-      case VoicePhase.idle:
-      case null:
-        return Expression.neutral;
+        return Expression.surprised;
+      case VoicePhase.speaking:
+        return emotion.index >= Emotion.frustrated.index
+            ? Expression.surprised
+            : Expression.excited;
       default:
-        break;
+        return Expression.neutral;
     }
-    return switch (emotion) {
-      Emotion.calm => Expression.happy,
-      Emotion.guarded => Expression.suspicious,
-      Emotion.defensive => Expression.unimpressed,
-      Emotion.frustrated => Expression.angry,
-      Emotion.upset => Expression.sad,
-      Emotion.angry => Expression.angry,
-    };
   }
+
+  String get asset => switch (this) {
+        Expression.neutral => 'assets/mascot/neutre.png',
+        Expression.attentive => 'assets/mascot/attentif.gif',
+        Expression.surprised => 'assets/mascot/surpris.png',
+        Expression.excited => 'assets/mascot/excite.png',
+      };
 }
 
-/// The other person: a solid black ball, two white eyes, and a life of colour
-/// that comes out from behind it when there is a voice.
+/// The other person: a small white cloud with two eyes.
 ///
-/// This is VERBAL's identity, and the rule is simple: the interface is
-/// monochrome, and the only colour anywhere is the mascot's life. At rest the
-/// ball is just a ball. When the other person speaks, or the user does,
-/// spectrum light emerges from behind its edge and reaches outward with the
-/// voice, then settles back inside when the voice stops — so you can see the
-/// conversation breathing. The body never moves and is never transparent. The
-/// eyes carry the expression: they glance, blink, and take the shape of the
-/// mood the conversation engine is in.
-class Presence extends StatefulWidget {
+/// Drawn artwork, not a painter — four faces are enough to feel alive, and
+/// the drawn ones are better than anything generated at runtime. This is
+/// VERBAL's identity; it is the only thing on screen that is not type or
+/// glass.
+class Presence extends StatelessWidget {
   const Presence({
     super.key,
     this.size = 150,
     this.expression = Expression.neutral,
+    // Kept so call sites read the same whichever face is drawn.
     this.heat = 0,
     this.speaking = false,
     this.listening = false,
@@ -78,377 +64,33 @@ class Presence extends StatefulWidget {
 
   final double size;
   final Expression expression;
-
-  /// 0 calm → 1 hostile. Warms the light.
   final double heat;
-
   final bool speaking;
   final bool listening;
-
-  /// 0..1 microphone level while listening, so the light follows the user.
   final double level;
 
   @override
-  State<Presence> createState() => _PresenceState();
-}
-
-class _PresenceState extends State<Presence>
-    with SingleTickerProviderStateMixin {
-  /// One loop is six seconds: long enough that glances and blinks do not
-  /// visibly repeat, short enough that the light's turn never jumps.
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 6),
-  );
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Reduce-motion must stop the ticker, not freeze the value it reads.
-    if (context.reduceMotion) {
-      _c
-        ..stop()
-        ..value = 0.5;
-    } else if (!_c.isAnimating) {
-      _c.repeat();
-    }
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final c = context.c;
-    final still = context.reduceMotion;
+    // Reduce-motion gets the still neutral face rather than the animated one.
+    final face = expression == Expression.attentive && context.reduceMotion
+        ? Expression.neutral
+        : expression;
     return Semantics(
-      label: widget.speaking
-          ? 'The other person is speaking'
-          : widget.listening
-              ? 'The other person is listening'
-              : 'The other person looks ${widget.expression.name}',
+      label: 'The other person looks ${face.name}',
       excludeSemantics: true,
-      child: SizedBox.square(
-        dimension: widget.size,
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, _) => CustomPaint(
-            painter: _MascotPainter(
-              seconds: (still ? 0.5 : _c.value) * 6,
-              expression: widget.expression,
-              heat: widget.heat.clamp(0.0, 1.0),
-              speaking: widget.speaking && !still,
-              listening: widget.listening,
-              level: widget.level.clamp(0.0, 1.0),
-              ink: c.ink,
-              bg: c.bg,
-              signal: c.signal,
-            ),
-          ),
+      child: AnimatedSwitcher(
+        duration: context.reduceMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 220),
+        child: Image.asset(
+          face.asset,
+          key: ValueKey(face),
+          width: size,
+          height: size,
+          fit: BoxFit.contain,
+          gaplessPlayback: true,
         ),
       ),
     );
   }
-}
-
-/// One eye: a rounded capsule, or an arc for a smile.
-class _Eye {
-  const _Eye({
-    this.w = 0.14,
-    this.h = 0.34,
-    this.tilt = 0,
-    this.dx = 0,
-    this.dy = 0,
-    this.arc = false,
-  });
-
-  /// Fractions of the body radius.
-  final double w;
-  final double h;
-
-  /// Radians; positive leans the top to the right.
-  final double tilt;
-  final double dx;
-  final double dy;
-
-  /// Drawn as an upward arc (a closed, happy eye) instead of a capsule.
-  final bool arc;
-}
-
-class _MascotPainter extends CustomPainter {
-  const _MascotPainter({
-    required this.seconds,
-    required this.expression,
-    required this.heat,
-    required this.speaking,
-    required this.listening,
-    required this.level,
-    required this.ink,
-    required this.bg,
-    required this.signal,
-  });
-
-  /// Time within the six-second loop.
-  final double seconds;
-  final Expression expression;
-  final double heat;
-  final bool speaking;
-  final bool listening;
-  final double level;
-  final Color ink;
-  final Color bg;
-  final Color signal;
-
-  /// Soft spectrum, never neon.
-  static const _spectrum = [
-    Color(0xFFFF8E8E),
-    Color(0xFFFFC98A),
-    Color(0xFFBDF2A1),
-    Color(0xFF8ADFFF),
-    Color(0xFFB79CFF),
-    Color(0xFFFF9BD8),
-    Color(0xFFFF8E8E),
-  ];
-
-  /// Speech has a shape — phrases, with syllables inside them. Two slow
-  /// sines, blended rather than rectified, so the light swells and settles
-  /// instead of flickering.
-  double get _voice {
-    final phrase = (math.sin(seconds * math.pi * 2 * 0.55) + 1) / 2;
-    final syllable = (math.sin(seconds * math.pi * 2 * 2.1 + 1.0) + 1) / 2;
-    return 0.65 * phrase + 0.35 * syllable;
-  }
-
-  /// How far the light has come out, 0 (hidden behind the ball) to 1.
-  double get _energy {
-    if (speaking) return 0.30 + 0.70 * _voice;
-    if (listening) return 0.25 + 0.75 * level;
-    return 0;
-  }
-
-  /// A small deterministic number per glance, so the eyes wander rather
-  /// than drift on a sine.
-  static double _noise(int seed, int salt) {
-    final x = math.sin(seed * 12.9898 + salt * 78.233) * 43758.5453;
-    return (x - x.floorToDouble()) * 2 - 1;
-  }
-
-  /// Where the eyes are looking, as a fraction of the body radius.
-  Offset get _gaze {
-    if (expression != Expression.neutral) return Offset.zero;
-    const glance = 2.4;
-    final seg = (seconds / glance).floor();
-    final f = (seconds - seg * glance) / glance;
-    final from = Offset(_noise(seg, 1), _noise(seg, 2));
-    final to = Offset(_noise(seg + 1, 1), _noise(seg + 1, 2));
-    final k = Curves.easeInOut.transform((f / 0.2).clamp(0.0, 1.0));
-    return Offset.lerp(from, to, k)! * 0.06;
-  }
-
-  /// 1 open, 0 shut.
-  double get _lid {
-    const every = 3.7;
-    const blink = 0.14;
-    final phase = seconds % every;
-    if (phase < blink) return 1 - math.sin(math.pi * phase / blink);
-    return 1;
-  }
-
-  /// Where the pair of eyes sits, as a fraction of the radius. Only the
-  /// resting face looks away; every expression is met head-on.
-  Offset get _seat => expression == Expression.neutral
-      ? const Offset(0.30, -0.30)
-      : const Offset(0, -0.04);
-
-  /// The eye shapes for each expression, left then right — the reference
-  /// sheet, in capsules that lean, widen, narrow, drop or close into arcs.
-  List<_Eye> get _eyes => switch (expression) {
-        // Two highlights on a ball: tilted, the right one a touch higher.
-        Expression.neutral => const [
-            _Eye(h: 0.30, tilt: -0.25),
-            _Eye(h: 0.30, tilt: -0.25, dy: -0.06),
-          ],
-        // Straight, open, centred.
-        Expression.attentive => const [_Eye(h: 0.36), _Eye(h: 0.36)],
-        // Closed into two short lines, high on the face.
-        Expression.happy => const [
-            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: -0.06),
-            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: -0.06),
-          ],
-        Expression.laughing => const [
-            _Eye(w: 0.26, h: 0.10, arc: true),
-            _Eye(w: 0.26, h: 0.10, arc: true),
-          ],
-        // \ /
-        Expression.angry => const [
-            _Eye(h: 0.26, tilt: -0.60),
-            _Eye(h: 0.26, tilt: 0.60),
-          ],
-        // / \ and dropped.
-        Expression.sad => const [
-            _Eye(h: 0.26, tilt: 0.50, dy: 0.06),
-            _Eye(h: 0.26, tilt: -0.50, dy: 0.06),
-          ],
-        Expression.scared => const [
-            _Eye(w: 0.30, h: 0.30),
-            _Eye(w: 0.30, h: 0.30),
-          ],
-        // One narrowed.
-        Expression.suspicious => const [
-            _Eye(h: 0.22),
-            _Eye(h: 0.12, dy: 0.02),
-          ],
-        // One raised.
-        Expression.confused => const [
-            _Eye(h: 0.30, dy: 0.04),
-            _Eye(h: 0.30, dy: -0.10),
-          ],
-        // Both looking up and off to one side.
-        Expression.curious => const [
-            _Eye(h: 0.26, dx: 0.10, dy: -0.10),
-            _Eye(h: 0.22, dx: 0.10, dy: -0.14),
-          ],
-        // Closed, smug: two short lines leaning out.
-        Expression.proud => const [
-            _Eye(w: 0.09, h: 0.20, tilt: 1.25, dy: -0.04),
-            _Eye(w: 0.09, h: 0.20, tilt: 1.90, dy: -0.04),
-          ],
-        // Small, looking down.
-        Expression.shy => const [
-            _Eye(w: 0.12, h: 0.20, dy: 0.10),
-            _Eye(w: 0.12, h: 0.20, dy: 0.10),
-          ],
-        // - -
-        Expression.unimpressed => const [
-            _Eye(w: 0.09, h: 0.24, tilt: 1.57),
-            _Eye(w: 0.09, h: 0.24, tilt: 1.57),
-          ],
-        // Half shut, low.
-        Expression.sleepy => const [
-            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: 0.08),
-            _Eye(w: 0.09, h: 0.20, tilt: 1.57, dy: 0.08),
-          ],
-      };
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final centre = size.center(Offset.zero);
-    final r = size.width * 0.30;
-    final energy = _energy;
-    final body = Rect.fromCircle(center: centre, radius: r);
-
-    // 1. The life, behind the ball. A disc of spectrum whose radius is the
-    //    voice: at rest it is smaller than the ball and completely hidden;
-    //    as the voice rises it comes out past the edge and reaches outward.
-    if (energy > 0) {
-      final reach = r * (0.9 + 0.75 * energy);
-      canvas.drawCircle(
-        centre,
-        reach,
-        Paint()
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.22)
-          ..shader = SweepGradient(
-            transform: GradientRotation(seconds * math.pi / 3),
-            colors: [
-              for (final c in _spectrum)
-                Color.lerp(c, signal, heat * 0.75)!.withValues(alpha: 0.95),
-            ],
-          ).createShader(Rect.fromCircle(center: centre, radius: reach)),
-      );
-    }
-
-    // 2. The ball: solid, lifted from the ground, lit from the top left, a
-    //    hairline of light on its top edge so it reads on a black screen.
-    canvas.drawCircle(
-      centre,
-      r,
-      Paint()
-        ..shader = RadialGradient(
-          center: const Alignment(-0.55, -0.65),
-          radius: 1.3,
-          colors: [
-            Color.lerp(bg, ink, 0.20)!,
-            Color.lerp(bg, ink, 0.07)!,
-            Color.lerp(bg, ink, 0.04)!,
-          ],
-          stops: const [0.0, 0.6, 1.0],
-        ).createShader(body),
-    );
-    canvas.drawCircle(
-      centre,
-      r,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..shader = SweepGradient(
-          startAngle: math.pi,
-          endAngle: math.pi * 3,
-          colors: [
-            ink.withValues(alpha: 0.50),
-            ink.withValues(alpha: 0.06),
-            ink.withValues(alpha: 0.50),
-          ],
-        ).createShader(body),
-    );
-
-    // 3. Eyes, in white, last — so they read over the light.
-    final gaze = _gaze * r;
-    final lid = _lid;
-    final eyes = _eyes;
-    final seat = _seat * r;
-    final gap = r * 0.24;
-    final paint = Paint()..color = ink;
-    final stroke = Paint()
-      ..color = ink
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = r * 0.09;
-
-    canvas.save();
-    canvas.translate(centre.dx + seat.dx + gaze.dx, centre.dy + seat.dy + gaze.dy);
-    for (var i = 0; i < 2; i++) {
-      final e = eyes[i];
-      final side = i == 0 ? -1 : 1;
-      canvas.save();
-      canvas.translate(side * gap + e.dx * r, e.dy * r);
-      canvas.rotate(e.tilt);
-      if (e.arc) {
-        final w = e.w * r;
-        canvas.drawPath(
-          Path()
-            ..moveTo(-w / 2, 0)
-            ..quadraticBezierTo(0, -e.h * r * 2.2, w / 2, 0),
-          stroke,
-        );
-      } else {
-        // Only an upright, open eye blinks; a line on its side is already
-        // a closed one.
-        final open = e.tilt.abs() < 1.0 ? lid : 1.0;
-        final w = e.w * r;
-        final h = math.max(w, e.h * r * open);
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromCenter(center: Offset.zero, width: w, height: h),
-            Radius.circular(w),
-          ),
-          paint,
-        );
-      }
-      canvas.restore();
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_MascotPainter old) =>
-      old.seconds != seconds ||
-      old.expression != expression ||
-      old.heat != heat ||
-      old.speaking != speaking ||
-      old.listening != listening ||
-      old.level != level ||
-      old.ink != ink;
 }
